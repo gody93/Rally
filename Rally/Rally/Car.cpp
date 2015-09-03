@@ -1,11 +1,22 @@
 #include "Car.h"
 
-Car::Car(int width, int height, double startingAngle) : PICTURE_WIDTH(width), PICTURE_HEIGHT(height), angle(startingAngle), CAR_VEL(0)
+Car::Car(int choosenCar, int width, int height, double startingAngle, int difficultyNumber)
+: PICTURE_WIDTH(width), PICTURE_HEIGHT(height), angle(startingAngle), CAR_VEL(0)
 {
-	setTopSpeed(4.4);
-	setTraction(0.3);
-	setAcceleration(0.2);
-	setBraking(0.05);
+	setCarCharacteristics(choosenCar);
+
+	this->isPowerUpPicked = false;
+
+	if (difficultyNumber != 6)
+	{
+		this->speedMeterX = 20;
+		this->speedMeterY = 510;
+	}
+	else
+	{
+		this->speedMeterX = 110;
+		this->speedMeterY = 470;
+	}
 
 	updateCarPosition();
 	if (angle == 0)
@@ -33,6 +44,31 @@ Car::~Car()
 	closeSounds();
 }
 
+void Car::setCarCharacteristics(int& choosenCar)
+{
+	switch (choosenCar)
+	{
+	case carOne: 
+		setTopSpeed(4.4);
+		setTraction(0.30);
+		setAcceleration(0.25);
+		setBraking(0.1);
+		break;
+	case carTwo: 
+		setTopSpeed(3.0);
+		setTraction(0.25);
+		setAcceleration(0.20);
+		setBraking(0.075);
+		break;
+	case carThree: 
+		setTopSpeed(2.1);
+		setTraction(0.15);
+		setAcceleration(0.15);
+		setBraking(0.05);
+		break;
+	}
+}
+
 void Car::moveForward(int& direction)
 {
 	switch (direction)
@@ -58,19 +94,19 @@ void Car::moveBackward(int& direction)
 void Car::accelerate()
 {
 	moveBackward(direction);
-	if (CAR_VEL <= this->topSpeed)
+	if (CAR_VEL < this->topSpeed)
 	{
 		CAR_VEL += 0.1;
 	}
 	moveForward(direction);
 }
 
-void Car::passiveBrakes()
+void Car::impactSlowDown()
 {
 	moveBackward(direction);
 	if (CAR_VEL > 0)
 	{
-		CAR_VEL -= 0.001;
+		CAR_VEL -= 0.05;
 	}
 	else
 	{
@@ -79,7 +115,7 @@ void Car::passiveBrakes()
 	moveForward(direction);
 }
 
-void Car::brakes()
+void Car::slowDown()
 {
 	moveBackward(direction);
 	if (CAR_VEL > 0)
@@ -146,10 +182,6 @@ void Car::handleEvent(SDL_Event& e)
 {
 	updateCarPosition();
 
-	std::cout << "mVelX: " << mVelX << std::endl;
-	std::cout << "mVelY: " << mVelY << std::endl;
-	std::cout << "CAR_VEL: " << CAR_VEL << std::endl << std::endl;
-
 	//If a key was pressed once
 	if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
 	{
@@ -160,13 +192,12 @@ void Car::handleEvent(SDL_Event& e)
 			{
 				moveForward(direction);
 			}
-	
 			Mix_PlayMusic(engine, 0);
 			accelerateClock = std::clock();
 			break;
 
 		case SDLK_DOWN:
-			brakes();
+			slowDown();
 			brakesClock = std::clock();
 			break;
 		case SDLK_LEFT:
@@ -198,21 +229,21 @@ void Car::handleEvent(SDL_Event& e)
 		case SDLK_DOWN:
 			if ((std::clock() - brakesClock) / (double)CLOCKS_PER_SEC > this->braking)
 			{
-				brakes();
+				slowDown();
 				brakesClock = std::clock();
 			}
 			break;
 		case SDLK_LEFT:
-			if ((std::clock() - driftingClock) / (double)CLOCKS_PER_SEC > 0.1)
+			if ((std::clock() - driftingClock) / (double)CLOCKS_PER_SEC > 0.05)
 			{
-				brakes();
+				slowDown();
 				driftingClock = std::clock();
 			}
 			break;
 		case SDLK_RIGHT:
-			if ((std::clock() - driftingClock) / (double)CLOCKS_PER_SEC > 0.1)
+			if ((std::clock() - driftingClock) / (double)CLOCKS_PER_SEC > 0.05)
 			{
-				brakes();
+				slowDown();
 				driftingClock = std::clock();
 			}
 			break;
@@ -225,10 +256,7 @@ void Car::handleEvent(SDL_Event& e)
 		switch (e.key.keysym.sym)
 		{
 		case SDLK_UP:
-			Mix_HaltMusic();
-			//moveForward(direction);
-			break;
-		case SDLK_DOWN: brakes(); break;
+		case SDLK_DOWN: Mix_HaltMusic(); break;
 		case SDLK_LEFT:
 			if ((std::clock() - turningClock) / (double)CLOCKS_PER_SEC > this->traction)
 			{
@@ -302,7 +330,7 @@ bool Car::checkCollision(SDL_Rect a, SDL_Rect b)
 	return true;
 }
 
-void Car::move(SDL_Rect wall[], int SCREEN_WIDTH, int SCREEN_HEIGHT, int obstaclesNumber)
+void Car::move(SDL_Rect wall[], int obstaclesNumber, int SCREEN_HEIGHT, int SCREEN_WIDTH)
 {
 	//Move the car left or right
 	mPosX += mVelX;
@@ -313,6 +341,12 @@ void Car::move(SDL_Rect wall[], int SCREEN_WIDTH, int SCREEN_HEIGHT, int obstacl
 		//If the car collided or went too far to the left or right
 		if ((mPosX < 0) || (mPosX + CAR_WIDTH > SCREEN_WIDTH) || checkCollision(mCollider, wall[i]))
 		{
+			if (CAR_VEL != 0)
+			{
+				Mix_PlayChannel(-1, crash, 0);
+			}
+			impactSlowDown();
+
 			//Move back
 			mPosX -= mVelX;
 			mCollider.x = (int)ceil(mPosX);
@@ -328,6 +362,12 @@ void Car::move(SDL_Rect wall[], int SCREEN_WIDTH, int SCREEN_HEIGHT, int obstacl
 		//If the car collided or went too far up or down
 		if ((mPosY < 0) || (mPosY + CAR_HEIGHT > SCREEN_HEIGHT) || checkCollision(mCollider, wall[i]))
 		{
+			if (CAR_VEL != 0)
+			{
+				Mix_PlayChannel(-1, crash, 0);
+			}
+			impactSlowDown();
+
 			//Move back
 			mPosY -= mVelY;
 			mCollider.y = (int)ceil(mPosY);
@@ -340,11 +380,14 @@ void Car::move(SDL_Rect wall[], int SCREEN_WIDTH, int SCREEN_HEIGHT, int obstacl
 	}
 }
 
-void Car::render(LTexture& gCarTexture, LTexture gSpeedMeter[], SDL_Renderer& renderer)
+void Car::render(LTexture& gCarTexture, LTexture& gSpeedMeter, SDL_Rect gSpeedMeterClips[], SDL_Renderer& renderer)
 {
 	//Show the car
 	gCarTexture.render(renderer, mPosX, mPosY, NULL, angle);
-	gSpeedMeter[(int)floor(this->CAR_VEL / 0.2)].render(renderer, 20, 500, NULL, 0);
+	
+	//Show the speed meter
+	SDL_Rect* currentClip = &gSpeedMeterClips[(int)floor(this->CAR_VEL / 0.1)];
+	gSpeedMeter.render(renderer, speedMeterX, speedMeterY, currentClip);
 }
 
 void Car::setCarX(double mPosX)
@@ -407,6 +450,26 @@ double Car::getBraking() const
 	return this->braking;
 }
 
+void Car::setSpeedMeterX(int speedMeterX)
+{
+	this->speedMeterX = speedMeterX;
+}
+
+int Car::getSpeedMeterX() const
+{
+	return this->speedMeterX;
+}
+
+void Car::setSpeedMeterY(int speedMeterY)
+{
+	this->speedMeterY = speedMeterY;
+}
+
+int Car::getSpeedMeterY() const
+{
+	return this->speedMeterY;
+}
+
 void Car::loadSounds()
 {
 	this->engine = Mix_LoadMUS("sounds/engine.mp3");
@@ -420,12 +483,28 @@ void Car::loadSounds()
 	{
 		std::cerr << "Sound cannot be loaded." << Mix_GetError << std::endl;
 	}
+
+	this->crash = Mix_LoadWAV("sounds/high.wav");
+	if (!crash)
+	{
+		std::cerr << "Sound cannot be loaded." << Mix_GetError << std::endl;
+	}
+
+	this->takePowerUp = Mix_LoadWAV("sounds/beat.wav");
+	if (!takePowerUp)
+	{
+		std::cerr << "Sound cannot be loaded." << Mix_GetError << std::endl;
+	}
 }
 
 void Car::closeSounds()
 {
 	Mix_FreeChunk(tire);
 	tire = NULL;
+	Mix_FreeChunk(crash);
+	crash = NULL;
+	Mix_FreeChunk(takePowerUp);
+	takePowerUp = NULL;
 	Mix_FreeMusic(engine);
 	engine = NULL;
 }

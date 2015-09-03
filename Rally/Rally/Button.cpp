@@ -64,12 +64,10 @@ bool Button::handleEvent(SDL_Event* e)
 	return isPressed;
 }
 
-
 bool Button::loadMedia(std::string path, SDL_Renderer &renderer)
 {
 	//Loading success flag
 	bool success = true;
-
 
 	//Load sprites
 	if (!buttonBackground.loadFromFile(path, &renderer))
@@ -78,8 +76,6 @@ bool Button::loadMedia(std::string path, SDL_Renderer &renderer)
 		success = false;
 	}
 	return success;
-
-	buttonBackground.render(renderer, 0, 0);
 }
 
 void Button::render(SDL_Renderer &renderer)

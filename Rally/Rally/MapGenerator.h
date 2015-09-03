@@ -23,6 +23,9 @@ public:
 	void setObstaclesNumber(int);
 	int getObstaclesNumber() const;
 
+	void setDifficulty(int);
+	int getDifficulty() const;
+
 private:
 	int difficultyNumber;
 
