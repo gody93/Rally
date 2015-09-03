@@ -1,14 +1,17 @@
 #include "Button.h"
 
 
-Button::Button(int width, int height)
+Button::Button(int width, int height, int x, int y)
 {
-	mPosition.x = 0;
-	mPosition.y = 0;
+	setPosition(x, y);
 	this->buttonWidth = width;
 	this->buttonHeight = height;
 }
 
+Button::~Button()
+{
+	free();
+}
 void Button::setPosition(int x, int y)
 {
 	mPosition.x = x;
@@ -64,12 +67,10 @@ bool Button::handleEvent(SDL_Event* e)
 	return isPressed;
 }
 
-
 bool Button::loadMedia(std::string path, SDL_Renderer &renderer)
 {
 	//Loading success flag
 	bool success = true;
-
 
 	//Load sprites
 	if (!buttonBackground.loadFromFile(path, &renderer))
@@ -78,12 +79,15 @@ bool Button::loadMedia(std::string path, SDL_Renderer &renderer)
 		success = false;
 	}
 	return success;
-
-	buttonBackground.render(renderer, 0, 0);
 }
 
 void Button::render(SDL_Renderer &renderer)
 {
 	//Show current button sprite
 	buttonBackground.render(renderer, mPosition.x, mPosition.y);
+}
+
+void Button::free()
+{
+	buttonBackground.free();
 }

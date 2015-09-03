@@ -134,3 +134,13 @@ int MapGenerator::getObstaclesNumber() const
 {
 	return this->obstaclesNumber;
 }
+
+void MapGenerator::setDifficulty(int difficultyNumber)
+{
+	this->difficultyNumber = difficultyNumber;
+}
+
+int MapGenerator::getDifficulty() const
+{
+	return this->difficultyNumber;
+}

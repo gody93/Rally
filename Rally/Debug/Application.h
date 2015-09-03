@@ -19,24 +19,31 @@ public:
 	bool init();
 
 	//Loads media
-	bool loadMedia();
+	bool loadMedia(int);
 
 	//Frees media and shuts down SDL
 	void close();
 
-	//Game states;
+	//Menu state
 	void menu();
-	void gameStart(std::fstream&, Button&, Button&);
+	
+
+private:
+
+	//Game states
+	void gameStart(std::fstream&, int&, Button&, Button&);
 	void loadingScreen(SDL_Renderer*, LTexture&, SDL_Color&, Car&, Button&);
 	void instructionsScreen(Button&, Button&);
 	void lastTenGamesScreen(std::fstream&, Button&, Button&);
+	
+	int chooseCar(SDL_Renderer*, Button&, Button&);
 
+	//Visualize obstacles
 	void drawObstaclesHelper(SDL_Renderer&, SDL_Rect*, int);
-
-	SDL_Texture* loadTexture(std::string path);
+	
+	//Time texture in-game
 	std::string timer(int);
 
-private:
 	//Screen dimension 
 	int SCREEN_WIDTH;
 	int SCREEN_HEIGHT;
@@ -48,9 +55,14 @@ private:
 	SDL_Renderer* gRenderer;
 
 	//Scene textures
-	LTexture gCarTexture;
+	LTexture gCarTexture, gFirstCarTexture, gSecondCarTexture, gThirdCarTexture;
 	LTexture gBackgroundTexture;
-	LTexture gSpeedMeter[23];
+	LTexture gSpeedMeter;
+	SDL_Rect gSpeedMeterClips[46];
+	LTexture youLose;
+	LTexture youWin;
+
+	enum cars { carOne = 1, carTwo, carThree };
 
 	Uint32 startTimeTemp;
 	int timeTemp;

@@ -21,7 +21,6 @@ void MoneyManager::removeDeposit(int& deposit)
 {
 	if (deposit > 0)
 	{
-
 		deposit -= 10;
 	}
 }

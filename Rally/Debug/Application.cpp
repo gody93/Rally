@@ -80,7 +80,7 @@ bool Application::init()
 	return success;
 }
 
-bool Application::loadMedia()
+bool Application::loadMedia(int car)
 {
 	//Loading success flag
 	bool success = true;
@@ -97,35 +97,70 @@ bool Application::loadMedia()
 
 	map.estimateStartingAngle(startingAngle);
 
-	if (!gCarTexture.loadFromFile("img/car.png", gRenderer))
+	switch (car)
+	{
+	case carOne:
+		if (!gFirstCarTexture.loadFromFile("img/cars/carOne.png", gRenderer))
+		{
+			printf("Failed to load car texture!\n");
+			success = false;
+		}
+		break;
+	case carTwo:
+		if (!gSecondCarTexture.loadFromFile("img/cars/carTwo.png", gRenderer))
+		{
+			printf("Failed to load car texture!\n");
+			success = false;
+		}
+		break;
+	case carThree:
+		if (!gThirdCarTexture.loadFromFile("img/cars/carThree.png", gRenderer))
+		{
+			printf("Failed to load car texture!\n");
+			success = false;
+		}
+		break;
+	default:
+		break;
+	}
+
+	if (!youLose.loadFromFile("img/game_over.png", gRenderer))
 	{
 		printf("Failed to load car texture!\n");
 		success = false;
 	}
 
-	std::string path = "img/speed meter/";
-	for (int i = 0; i < 23; i++)
+	if (!youWin.loadFromFile("img/you_win.png", gRenderer))
 	{
-		std::string pictureName = path;
-		pictureName.append(std::to_string(i * 10));
-		pictureName.append(".png");
-		if (!gSpeedMeter[i].loadFromFile(pictureName, gRenderer))
-		{
-			printf("Failed to load speed meter texture!\n");
-			success = false;
-			break;
-		}
+		printf("Failed to load car texture!\n");
+		success = false;
 	}
 
+	if (!gSpeedMeter.loadFromFile("img/speedMeter.png", gRenderer))
+	{
+		printf("Failed to load speed meter texture!\n");
+		success = false;
+	}
+	else
+	{
+		const int SPEED_METER_HEIGHT = 133;
+		const int SPEED_METER_WIDTH = 168;
+
+		//Set sprite clips
+		for (int i = 0; i < 46; i++)
+		{
+
+			gSpeedMeterClips[i].x = i * SPEED_METER_WIDTH;
+			gSpeedMeterClips[i].y = 0;
+			gSpeedMeterClips[i].w = SPEED_METER_WIDTH;
+			gSpeedMeterClips[i].h = SPEED_METER_HEIGHT;				
+		}
+	}
 	return success;
 }
 
 void Application::close()
 {
-	//Free loaded images
-	gCarTexture.free();
-	gBackgroundTexture.free();
-
 	//Destroy window	
 	SDL_DestroyRenderer(gRenderer);
 	SDL_DestroyWindow(gWindow);
@@ -159,22 +194,23 @@ void Application::menu()
 	menuBackgroundSound = Mix_LoadMUS("sounds/menu_background.mp3");
 	Mix_PlayMusic(menuBackgroundSound, 10);
 	LTexture menuBackgroundTexture;
+	// menuBackgroundTexture.free();
 	int buttonWidth = 160, buttonHeight = 50;
 	int start = 0;
 
 	//------------BUTTONS------------
-	Button exitButton(buttonWidth, buttonHeight);
-	Button startButton(buttonWidth, buttonHeight);
-	Button instructionsButton(buttonWidth, buttonHeight);
-	Button addDepositButton(buttonHeight, buttonHeight);
-	Button removeDepositButton(buttonHeight, buttonHeight);
-	Button makeDepositButton(buttonWidth, buttonHeight);
-	Button addBetButton(buttonHeight, buttonHeight);
-	Button removeBetButton(buttonHeight, buttonHeight);
-	Button betButton(buttonWidth, buttonHeight);
-	Button highScoresButton(buttonWidth, buttonHeight);
-	Button onMusicButton(45, buttonHeight);
-	Button offMusicButton(45, buttonHeight);
+	Button exitButton(buttonWidth, buttonHeight, 370, 600);
+	Button startButton(buttonWidth, buttonHeight, 370, 200);
+	Button instructionsButton(buttonWidth, buttonHeight, 650, 370);
+	Button addDepositButton(buttonHeight, buttonHeight, 90, 135);
+	Button removeDepositButton(buttonHeight, buttonHeight, 200, 135);
+	Button makeDepositButton(buttonWidth, buttonHeight, 77, 180);
+	Button addBetButton(buttonHeight, buttonHeight, 665, 135);
+	Button removeBetButton(buttonHeight, buttonHeight, 775, 135);
+	Button betButton(buttonWidth, buttonHeight, 650, 180);
+	Button lastTenGamesButton(250, buttonHeight, 72, 370);
+	Button onMusicButton(45, buttonHeight, 830, 10);
+	Button offMusicButton(45, buttonHeight, 830, 10);
 
 	//------------Text--------------
 	LTexture menuTitle;
@@ -204,40 +240,28 @@ void Application::menu()
 	//-------------BUTTON SET POS & BACKGROUND----------
 	menuBackgroundTexture.loadFromFile("img/menu.png", gRenderer);
 
-	startButton.setPosition(370, 200);
 	startButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	exitButton.setPosition(370, 600);
 	exitButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	instructionsButton.setPosition(650, 370);
 	instructionsButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	highScoresButton.setPosition(77, 370);
-	highScoresButton.loadMedia("img/buttons/button.png", *gRenderer);
+	lastTenGamesButton.loadMedia("img/buttons/buttonOne.png", *gRenderer);
 
-	addDepositButton.setPosition(90, 135);
 	addDepositButton.loadMedia("img/buttons/button-add.png", *gRenderer);
 
-	removeDepositButton.setPosition(200, 135);
 	removeDepositButton.loadMedia("img/buttons/button-remove.png", *gRenderer);
 
-	makeDepositButton.setPosition(77, 180);
 	makeDepositButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	addBetButton.setPosition(665, 135);
 	addBetButton.loadMedia("img/buttons/button-add.png", *gRenderer);
 
-	removeBetButton.setPosition(775, 135);
 	removeBetButton.loadMedia("img/buttons/button-remove.png", *gRenderer);
 
-	onMusicButton.setPosition(830, 10);
 	onMusicButton.loadMedia("img/onMusic.png", *gRenderer);
 
-	offMusicButton.setPosition(830, 10);
 	offMusicButton.loadMedia("img/offMusic.png", *gRenderer);
 
-	betButton.setPosition(650, 180);
 	betButton.loadMedia("img/buttons/button.png", *gRenderer);
 
 	//--------------TEXT LOADING---------
@@ -246,10 +270,10 @@ void Application::menu()
 	startButtonText.loadFromRenderedText("Play", textColor, *gRenderer);
 	exitButtonText.loadFromRenderedText("Exit Game", textColor, *gRenderer);
 	instructionText.loadFromRenderedText("Instructions", textColor, *gRenderer);
-	highScoresText.loadFromRenderedText("Highscores", textColor, *gRenderer);
+	highScoresText.loadFromRenderedText("Last Ten Games", textColor, *gRenderer);
 	creditText.loadFromRenderedText("Your credit: ", textColor, *gRenderer);
 	creditNumber.loadFromRenderedText(std::to_string((int)this->startCredit), textColor, *gRenderer);
-	depositNum.loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
+	depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
 	makeDepositText.loadFromRenderedText("Make Deposit", textColor, *gRenderer);
 	betNum.loadFromRenderedText(std::to_string((int)(playerBet)), textColor, *gRenderer);
 	betText.loadFromRenderedText("Your Bet", textColor, *gRenderer);
@@ -297,7 +321,6 @@ void Application::menu()
 					if (Mix_PausedMusic() == 1)
 					{
 						Mix_ResumeMusic();
-
 					}
 					else
 					{
@@ -310,7 +333,17 @@ void Application::menu()
 			{
 				moneyManager.setCredit(this->startCredit);
 				startTimeTemp = SDL_GetTicks();
-				gameStart(gameFile, onMusicButton, offMusicButton);
+				this->deposit = 0;
+				depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
+				int chosenCar = chooseCar(gRenderer, onMusicButton, offMusicButton);
+				if (chosenCar != 0)
+				{
+					gameStart(gameFile, chosenCar, onMusicButton, offMusicButton);
+				}
+				else
+				{
+					continue;
+				}
 				if (isMusicOn)
 				{
 					Mix_PlayMusic(menuBackgroundSound, 10);
@@ -323,7 +356,7 @@ void Application::menu()
 			{
 				instructionsScreen(onMusicButton, offMusicButton);
 			}
-			else if (highScoresButton.handleEvent(&e))
+			else if (lastTenGamesButton.handleEvent(&e))
 			{
 				lastTenGamesScreen(gameFile, onMusicButton, offMusicButton);
 			}
@@ -340,8 +373,8 @@ void Application::menu()
 			else if (makeDepositButton.handleEvent(&e))
 			{
 				moneyManager.makeDeposit(this->startCredit, this->deposit);
-				creditNumber.loadFromRenderedText(std::to_string((int)(startCredit)), textColor, *gRenderer);
-				depositNum.loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
+				creditNumber.loadFromRenderedText(std::to_string((int)(this->startCredit)), textColor, *gRenderer);
+				depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
 			}
 			else if (addBetButton.handleEvent(&e))
 			{
@@ -365,7 +398,7 @@ void Application::menu()
 		exitButton.render(*gRenderer);
 		startButton.render(*gRenderer);
 		instructionsButton.render(*gRenderer);
-		highScoresButton.render(*gRenderer);
+		lastTenGamesButton.render(*gRenderer);
 		addDepositButton.render(*gRenderer);
 		removeDepositButton.render(*gRenderer);
 		makeDepositButton.render(*gRenderer);
@@ -458,31 +491,38 @@ void Application::menu()
 	}
 }
 
-void Application::gameStart(std::fstream& fileToRead, Button& onMusicButton, Button& offMusicButton)
+void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& onMusicButton, Button& offMusicButton)
 {
 	if (gWindow != NULL)
 	{
-		if (!loadMedia())
+		if (!loadMedia(choosenCar))
 		{
 			printf("Failed to load media!\n");
 		}
 	}
+
 	//Main loop flag
 	bool quit = false;
+
 	int timeTemp = this->time;
+
 	//Event handler
 	SDL_Event e;
 	SDL_Color textColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 	LTexture timeTexture;
-	LTexture youLose;
-	LTexture youWin;
 
-	youLose.loadFromFile("img/game_over.png", gRenderer);
-	youWin.loadFromFile("img/you_win.png", gRenderer);
+	//
 	bool firstRun = true;
 
+	switch (choosenCar)
+	{
+		case carOne: gCarTexture = gFirstCarTexture; break;
+		case carTwo: gCarTexture = gSecondCarTexture; break;
+		case carThree: gCarTexture = gThirdCarTexture; break;
+	}
+
 	//The car that will be moving around on the screen
-	Car car(gCarTexture.getWidth(), gCarTexture.getHeight(), startingAngle);
+	Car car(choosenCar, gCarTexture.getWidth(), gCarTexture.getHeight(), startingAngle, map.getDifficulty());
 	SDL_Rect* wall = map.getObstacles();
 	this->startGame = obj.getCurrentTime(obj.getCurrentDateTime());
 
@@ -559,8 +599,8 @@ void Application::gameStart(std::fstream& fileToRead, Button& onMusicButton, But
 		//test the obstacles
 		//drawObstaclesHelper(*gRenderer, wall, map.getObstaclesNumber());
 
-		//Move the dot and check collision
-		car.move(wall, SCREEN_WIDTH, SCREEN_HEIGHT, map.getObstaclesNumber());
+		//Move the car and check collision
+		car.move(wall, map.getObstaclesNumber(), SCREEN_HEIGHT, SCREEN_WIDTH);
 
 		if (timeTemp < 0)
 		{
@@ -610,23 +650,43 @@ void Application::gameStart(std::fstream& fileToRead, Button& onMusicButton, But
 			return;
 		}
 		//Render car
-		car.render(gCarTexture, gSpeedMeter, *gRenderer);
+		car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
 
-		//UP
+		//UPDATE SCREEN
 		SDL_RenderPresent(gRenderer);
 	}
 }
 
 void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, SDL_Color& textColor, Car &car, Button& musicButton)
 {
-	Mix_HaltMusic();
 	LTexture one, two, three;
+
+	if (!one.loadFromFile("img/One.png", gRenderer))
+	{
+		printf("Failed to load one.png !\n");
+	}
+
+	if (!two.loadFromFile("img/Two.png", gRenderer))
+	{
+		printf("Failed to load two.png!\n");
+	}
+
+	if (!three.loadFromFile("img/Three.png", gRenderer))
+	{
+		printf("Failed to load three.png !\n");
+	}
+
+	Mix_HaltMusic();
 	beep = Mix_LoadWAV("sounds/beep.wav");
 	go = Mix_LoadWAV("sounds/go.wav");
-	one.loadFromFile("img/One.png", gRenderer);
-	two.loadFromFile("img/Two.png", gRenderer);
-	three.loadFromFile("img/Three.png", gRenderer);
-
+	if (beep == NULL)
+	{
+		printf("Failed to load beep.wav !\n");
+	}
+	if (go == NULL)
+	{
+		printf("Failed to load go.wav !\n");
+	}
 	//Clear screen
 	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(gRenderer);
@@ -637,7 +697,7 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 
 
 	timeTexture.loadFromRenderedText(timer(this->time), textColor, *gRenderer);
-	car.render(gCarTexture, gSpeedMeter, *gRenderer);
+	car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
 	timeTexture.render(*gRenderer, 620, 10);
 
 	if (isMusicOn)
@@ -659,7 +719,7 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 
 	timeTexture.loadFromRenderedText(timer(this->time), textColor, *gRenderer);
 	timeTexture.render(*gRenderer, 620, 10);
-	car.render(gCarTexture, gSpeedMeter, *gRenderer);
+	car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
 
 	if (isMusicOn)
 	{
@@ -680,7 +740,7 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 
 	timeTexture.loadFromRenderedText(timer(this->time), textColor, *gRenderer);
 	timeTexture.render(*gRenderer, 620, 10);
-	car.render(gCarTexture, gSpeedMeter, *gRenderer);
+	car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
 
 	if (isMusicOn)
 	{
@@ -692,6 +752,7 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 	{
 		Mix_PlayChannel(-1, go, 0);
 	}
+
 }
 
 void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButton)
@@ -699,18 +760,21 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 
 	if (gWindow == NULL)
 	{
-		if (!loadMedia())
-		{
-			printf("Failed to load media!\n");
-		}
+		printf("Failed to load media!\n");
 	}
 
-	bool quit = false;
 	//Main loop flag
+	bool quit = false;
+
+	//Text Color
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
+
+	//Back button
+	Button back(160, 50, 370, 600);
+
+	//Textures
 	LTexture backgroundTexture;
 	LTexture arrows;
-	Button back(160, 50);
 	LTexture backText;
 	LTexture instructions;
 	LTexture instructionsTwo;
@@ -722,13 +786,13 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 	LTexture instructionsRight;
 	LTexture instructionsRightOne;
 	LTexture instructionsRightTwo;
+	LTexture instructionsChoice;
 	LTexture slogan;
 	LTexture sloganTwo;
 
 
 	//-------------BUTTON SET POS & BCKGROUND----------
 	backgroundTexture.loadFromFile("img/menu.png", gRenderer);
-	back.setPosition(370, 600);
 	back.loadMedia("img/buttons/button.png", *gRenderer);
 	arrows.loadFromFile("img/arrowKeys.png", gRenderer);
 
@@ -747,6 +811,7 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 	instructionsRightTwo.loadFromRenderedText("to turn the car in this direction.", textColor, *gRenderer);
 	slogan.loadFromRenderedText("Good luck!", textColor, *gRenderer);
 	sloganTwo.loadFromRenderedText("And may the Gods be ever in your favour!", textColor, *gRenderer);
+	instructionsChoice.loadFromRenderedText("When you choose your car, press enter to begin the game", textColor, *gRenderer);
 
 
 	//Event handler
@@ -810,6 +875,7 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 		instructionsRightTwo.render(*gRenderer, 560, 270);
 		slogan.render(*gRenderer, ((SCREEN_WIDTH - slogan.getWidth()) / 2), 510);
 		sloganTwo.render(*gRenderer, ((SCREEN_WIDTH - sloganTwo.getWidth()) / 2), 540);
+		instructionsChoice.render(*gRenderer, ((SCREEN_WIDTH - instructionsChoice.getWidth()) / 2), 450);
 
 		if (isMusicOn)
 		{
@@ -830,16 +896,13 @@ void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicBu
 {
 	if (gWindow == NULL)
 	{
-		if (!loadMedia())
-		{
-			printf("Failed to load media!\n");
-		}
+		printf("Unable to open window");
 	}
 	bool quit = false;
 	//Main loop flag
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
 	LTexture backgroundTexture;
-	Button back(160, 50);
+	Button back(160, 50, 370, 600);
 	LTexture backText;
 	LTexture description;
 	std::string descriptionText = "Player Credit";
@@ -977,6 +1040,173 @@ void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicBu
 		//------------- UPDATE SCREEN----------------
 		SDL_RenderPresent(gRenderer);
 	}
+}
+
+int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Button& offMusicButton)
+{
+	if (gWindow == NULL)
+	{
+		printf("Failed to load screen!\n");
+	}
+
+	bool quit = false;
+	//Main loop flag
+	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
+	Button back(160, 50, 370, 600);
+	LTexture backgroundTexture;
+	LTexture header;
+	LTexture cursor;
+	LTexture attributesCarOne;
+	LTexture attributesCarTwo;
+	LTexture attributesCarThree;
+	LTexture backText;
+	LTexture text;
+	LTexture carOne;
+	LTexture carTwo;
+	LTexture carThree;
+
+	int cursorX = 190;
+	int cursorY = 90;
+	//--------------BACKGROUND IMG-----------------
+	backgroundTexture.loadFromFile("img/menu.png", gRenderer);
+
+	//--------------CURSOR IMG --------------------
+	cursor.loadFromFile("img/cars/cursor.png", gRenderer);
+
+	//----------------ATTRIBUTES--------------
+	attributesCarOne.loadFromFile("img/cars/fastest.png", gRenderer);
+	attributesCarTwo.loadFromFile("img/cars/medium.png", gRenderer);
+	attributesCarThree.loadFromFile("img/cars/slowest.png", gRenderer);
+
+	//-------------BUTTON SET POS & BCKGROUND----------
+	back.setPosition(370, 600);
+	back.loadMedia("img/buttons/button.png", *gRenderer);
+
+
+	//---------------CAR PICTURES----------------
+	carOne.loadFromFile("img/cars/carOneLarge.png", gRenderer);
+	carTwo.loadFromFile("img/cars/carTwoLarge.png", gRenderer);
+	carThree.loadFromFile("img/cars/carThreeLarge.png", gRenderer);
+
+
+	//------------------TEXT LOADING-------------------
+	backText.loadFromRenderedText("Back", textColor, *gRenderer);
+	header.loadFromRenderedText("Choose your vehicle", textColor, *gRenderer);
+	//Event handler
+	SDL_Event e;
+
+	//While application is running
+	while (!quit)
+	{
+		//Handle events on queue
+		while (SDL_PollEvent(&e) != 0)
+		{
+			//User requests quit
+			if (e.type == SDL_QUIT)
+			{
+				quit = true;
+			}
+			else if (onMusicButton.handleEvent(&e))
+			{
+				if (isMusicOn)
+				{
+					isMusicOn = false;
+					Mix_PauseMusic();
+				}
+				else
+				{
+					isMusicOn = true;
+					Mix_ResumeMusic();
+				}
+			}
+			else if (e.type == SDL_MOUSEBUTTONUP)
+			{
+				if (back.handleEvent(&e))
+				{
+					return 0;
+				}
+			}
+			else if (e.type == SDL_KEYUP)
+			{
+				switch (e.key.keysym.sym)
+				{
+				case SDLK_RIGHT:
+					cursorX += 200;
+					if (cursorX > 590)
+					{
+						cursorX = 590;
+					}
+					break;
+				case SDLK_LEFT:
+					cursorX -= 200;
+					if (cursorX < 190)
+					{
+						cursorX = 190;
+					}
+					break;
+				case SDLK_RETURN:
+					if (cursorX == 190)
+					{
+						return 1;
+					}
+					else if (cursorX == 390)
+					{
+						return 2;
+					}
+					else
+					{
+						return 3;
+					}
+					break;
+				case SDLK_ESCAPE:
+					return 0;
+					break;
+				default:
+					break;
+				}
+			}
+		}
+
+		//--------------CLEAR SCREEN-----------
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
+
+		//---------------RENDER TEXT AND TEXTURES----------------
+		backgroundTexture.render(*gRenderer, 0, 0);
+		header.render(*gRenderer, ((SCREEN_WIDTH - header.getWidth()) / 2), 30);
+		back.render(*gRenderer);
+		backText.render(*gRenderer, ((SCREEN_WIDTH - backText.getWidth()) / 2), 614);
+		carOne.render(*gRenderer, 200, 100);
+		carTwo.render(*gRenderer, 400, 100);
+		carThree.render(*gRenderer, 600, 100);
+		cursor.render(*gRenderer, cursorX, cursorY);
+
+		if (isMusicOn)
+		{
+			onMusicButton.render(*gRenderer);
+		}
+		else
+		{
+			offMusicButton.render(*gRenderer);
+		}
+
+		if (cursorX == 190)
+		{
+			attributesCarOne.render(*gRenderer, ((SCREEN_WIDTH - attributesCarOne.getWidth()) / 2), 300);
+		}
+		else if (cursorX == 390)
+		{
+			attributesCarTwo.render(*gRenderer, ((SCREEN_WIDTH - attributesCarTwo.getWidth()) / 2), 300);
+		}
+		else
+		{
+			attributesCarThree.render(*gRenderer, ((SCREEN_WIDTH - attributesCarThree.getWidth()) / 2), 300);
+		}
+
+		//------------- UPDATE SCREEN----------------
+		SDL_RenderPresent(gRenderer);
+	}
+	return 0;
 }
 
 std::string Application::timer(int availiableTime)
