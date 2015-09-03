@@ -24,7 +24,7 @@ public:
 	//Frees media and shuts down SDL
 	void close();
 
-	//Game states;
+	//Menu state
 	void menu();
 	
 

@@ -10,7 +10,7 @@ Car::Car(int choosenCar, int width, int height, double startingAngle, int diffic
 	if (difficultyNumber != 6)
 	{
 		this->speedMeterX = 20;
-		this->speedMeterY = 510;
+		this->speedMeterY = 520;
 	}
 	else
 	{

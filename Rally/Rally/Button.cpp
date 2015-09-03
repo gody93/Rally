@@ -1,14 +1,17 @@
 #include "Button.h"
 
 
-Button::Button(int width, int height)
+Button::Button(int width, int height, int x, int y)
 {
-	mPosition.x = 0;
-	mPosition.y = 0;
+	setPosition(x, y);
 	this->buttonWidth = width;
 	this->buttonHeight = height;
 }
 
+Button::~Button()
+{
+	free();
+}
 void Button::setPosition(int x, int y)
 {
 	mPosition.x = x;
@@ -82,4 +85,9 @@ void Button::render(SDL_Renderer &renderer)
 {
 	//Show current button sprite
 	buttonBackground.render(renderer, mPosition.x, mPosition.y);
+}
+
+void Button::free()
+{
+	buttonBackground.free();
 }

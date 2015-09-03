@@ -6,7 +6,8 @@ class Button
 {
 public:
 	//Initializes internal variables
-	Button(int width, int height);
+	Button(int,int,int,int);
+	~Button();
 
 	//Sets top left position
 	void setPosition(int x, int y);
@@ -17,6 +18,9 @@ public:
 	void render(SDL_Renderer &renderer);
 
 	bool loadMedia(std::string path, SDL_Renderer &renderer);
+	
+	//Frees texture backgrounds
+	void free();
 private:
 	int buttonWidth;
 	int buttonHeight;

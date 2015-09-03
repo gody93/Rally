@@ -199,18 +199,18 @@ void Application::menu()
 	int start = 0;
 
 	//------------BUTTONS------------
-	Button exitButton(buttonWidth, buttonHeight);
-	Button startButton(buttonWidth, buttonHeight);
-	Button instructionsButton(buttonWidth, buttonHeight);
-	Button addDepositButton(buttonHeight, buttonHeight);
-	Button removeDepositButton(buttonHeight, buttonHeight);
-	Button makeDepositButton(buttonWidth, buttonHeight);
-	Button addBetButton(buttonHeight, buttonHeight);
-	Button removeBetButton(buttonHeight, buttonHeight);
-	Button betButton(buttonWidth, buttonHeight);
-	Button lastTenGamesButton(250, buttonHeight);
-	Button onMusicButton(45, buttonHeight);
-	Button offMusicButton(45, buttonHeight);
+	Button exitButton(buttonWidth, buttonHeight, 370, 600);
+	Button startButton(buttonWidth, buttonHeight, 370, 200);
+	Button instructionsButton(buttonWidth, buttonHeight, 650, 370);
+	Button addDepositButton(buttonHeight, buttonHeight, 90, 135);
+	Button removeDepositButton(buttonHeight, buttonHeight, 200, 135);
+	Button makeDepositButton(buttonWidth, buttonHeight, 77, 180);
+	Button addBetButton(buttonHeight, buttonHeight, 665, 135);
+	Button removeBetButton(buttonHeight, buttonHeight, 775, 135);
+	Button betButton(buttonWidth, buttonHeight, 650, 180);
+	Button lastTenGamesButton(250, buttonHeight, 72, 370);
+	Button onMusicButton(45, buttonHeight, 830, 10);
+	Button offMusicButton(45, buttonHeight, 830, 10);
 
 	//------------Text--------------
 	LTexture menuTitle;
@@ -240,40 +240,28 @@ void Application::menu()
 	//-------------BUTTON SET POS & BACKGROUND----------
 	menuBackgroundTexture.loadFromFile("img/menu.png", gRenderer);
 
-	startButton.setPosition(370, 200);
 	startButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	exitButton.setPosition(370, 600);
 	exitButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	instructionsButton.setPosition(650, 370);
 	instructionsButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	lastTenGamesButton.setPosition(72, 370);
 	lastTenGamesButton.loadMedia("img/buttons/buttonOne.png", *gRenderer);
 
-	addDepositButton.setPosition(90, 135);
 	addDepositButton.loadMedia("img/buttons/button-add.png", *gRenderer);
 
-	removeDepositButton.setPosition(200, 135);
 	removeDepositButton.loadMedia("img/buttons/button-remove.png", *gRenderer);
 
-	makeDepositButton.setPosition(77, 180);
 	makeDepositButton.loadMedia("img/buttons/button.png", *gRenderer);
 
-	addBetButton.setPosition(665, 135);
 	addBetButton.loadMedia("img/buttons/button-add.png", *gRenderer);
 
-	removeBetButton.setPosition(775, 135);
 	removeBetButton.loadMedia("img/buttons/button-remove.png", *gRenderer);
 
-	onMusicButton.setPosition(830, 10);
 	onMusicButton.loadMedia("img/onMusic.png", *gRenderer);
 
-	offMusicButton.setPosition(830, 10);
 	offMusicButton.loadMedia("img/offMusic.png", *gRenderer);
 
-	betButton.setPosition(650, 180);
 	betButton.loadMedia("img/buttons/button.png", *gRenderer);
 
 	//--------------TEXT LOADING---------
@@ -285,7 +273,7 @@ void Application::menu()
 	highScoresText.loadFromRenderedText("Last Ten Games", textColor, *gRenderer);
 	creditText.loadFromRenderedText("Your credit: ", textColor, *gRenderer);
 	creditNumber.loadFromRenderedText(std::to_string((int)this->startCredit), textColor, *gRenderer);
-	depositNum.loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
+	depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
 	makeDepositText.loadFromRenderedText("Make Deposit", textColor, *gRenderer);
 	betNum.loadFromRenderedText(std::to_string((int)(playerBet)), textColor, *gRenderer);
 	betText.loadFromRenderedText("Your Bet", textColor, *gRenderer);
@@ -333,7 +321,6 @@ void Application::menu()
 					if (Mix_PausedMusic() == 1)
 					{
 						Mix_ResumeMusic();
-
 					}
 					else
 					{
@@ -347,7 +334,7 @@ void Application::menu()
 				moneyManager.setCredit(this->startCredit);
 				startTimeTemp = SDL_GetTicks();
 				this->deposit = 0;
-				depositNum.render(*gRenderer, 157, 150);
+				depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
 				int chosenCar = chooseCar(gRenderer, onMusicButton, offMusicButton);
 				if (chosenCar != 0)
 				{
@@ -386,8 +373,8 @@ void Application::menu()
 			else if (makeDepositButton.handleEvent(&e))
 			{
 				moneyManager.makeDeposit(this->startCredit, this->deposit);
-				creditNumber.loadFromRenderedText(std::to_string((int)(startCredit)), textColor, *gRenderer);
-				depositNum.loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
+				creditNumber.loadFromRenderedText(std::to_string((int)(this->startCredit)), textColor, *gRenderer);
+				depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
 			}
 			else if (addBetButton.handleEvent(&e))
 			{
@@ -529,9 +516,9 @@ void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& o
 
 	switch (choosenCar)
 	{
-	case carOne: gCarTexture = gFirstCarTexture; break;
-	case carTwo: gCarTexture = gSecondCarTexture; break;
-	case carThree: gCarTexture = gThirdCarTexture; break;
+		case carOne: gCarTexture = gFirstCarTexture; break;
+		case carTwo: gCarTexture = gSecondCarTexture; break;
+		case carThree: gCarTexture = gThirdCarTexture; break;
 	}
 
 	//The car that will be moving around on the screen
@@ -665,15 +652,13 @@ void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& o
 		//Render car
 		car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
 
-		//UP
+		//UPDATE SCREEN
 		SDL_RenderPresent(gRenderer);
 	}
-	timeTexture.free();
 }
 
 void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, SDL_Color& textColor, Car &car, Button& musicButton)
 {
-
 	LTexture one, two, three;
 
 	if (!one.loadFromFile("img/One.png", gRenderer))
@@ -694,7 +679,14 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 	Mix_HaltMusic();
 	beep = Mix_LoadWAV("sounds/beep.wav");
 	go = Mix_LoadWAV("sounds/go.wav");
-
+	if (beep == NULL)
+	{
+		printf("Failed to load beep.wav !\n");
+	}
+	if (go == NULL)
+	{
+		printf("Failed to load go.wav !\n");
+	}
 	//Clear screen
 	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(gRenderer);
@@ -778,7 +770,7 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
 
 	//Back button
-	Button back(160, 50);
+	Button back(160, 50, 370, 600);
 
 	//Textures
 	LTexture backgroundTexture;
@@ -794,13 +786,13 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 	LTexture instructionsRight;
 	LTexture instructionsRightOne;
 	LTexture instructionsRightTwo;
+	LTexture instructionsChoice;
 	LTexture slogan;
 	LTexture sloganTwo;
 
 
 	//-------------BUTTON SET POS & BCKGROUND----------
 	backgroundTexture.loadFromFile("img/menu.png", gRenderer);
-	back.setPosition(370, 600);
 	back.loadMedia("img/buttons/button.png", *gRenderer);
 	arrows.loadFromFile("img/arrowKeys.png", gRenderer);
 
@@ -819,6 +811,7 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 	instructionsRightTwo.loadFromRenderedText("to turn the car in this direction.", textColor, *gRenderer);
 	slogan.loadFromRenderedText("Good luck!", textColor, *gRenderer);
 	sloganTwo.loadFromRenderedText("And may the Gods be ever in your favour!", textColor, *gRenderer);
+	instructionsChoice.loadFromRenderedText("When you choose your car, press enter to begin the game", textColor, *gRenderer);
 
 
 	//Event handler
@@ -882,6 +875,7 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 		instructionsRightTwo.render(*gRenderer, 560, 270);
 		slogan.render(*gRenderer, ((SCREEN_WIDTH - slogan.getWidth()) / 2), 510);
 		sloganTwo.render(*gRenderer, ((SCREEN_WIDTH - sloganTwo.getWidth()) / 2), 540);
+		instructionsChoice.render(*gRenderer, ((SCREEN_WIDTH - instructionsChoice.getWidth()) / 2), 450);
 
 		if (isMusicOn)
 		{
@@ -908,7 +902,7 @@ void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicBu
 	//Main loop flag
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
 	LTexture backgroundTexture;
-	Button back(160, 50);
+	Button back(160, 50, 370, 600);
 	LTexture backText;
 	LTexture description;
 	std::string descriptionText = "Player Credit";
@@ -1058,7 +1052,7 @@ int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Butto
 	bool quit = false;
 	//Main loop flag
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
-	Button back(160, 50);
+	Button back(160, 50, 370, 600);
 	LTexture backgroundTexture;
 	LTexture header;
 	LTexture cursor;
