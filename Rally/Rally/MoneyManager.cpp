@@ -8,6 +8,7 @@ MoneyManager::~MoneyManager()
 {
 }
 
+//Adds 10 to current deposit
 void MoneyManager::addDeposit(int& deposit)
 {
 	if (deposit < 100)
@@ -17,6 +18,7 @@ void MoneyManager::addDeposit(int& deposit)
 	}
 }
 
+//Removes 10 from current deposit
 void MoneyManager::removeDeposit(int& deposit)
 {
 	if (deposit > 0)
@@ -25,6 +27,7 @@ void MoneyManager::removeDeposit(int& deposit)
 	}
 }
 
+//Adds current deposit to playerCredit
 void MoneyManager::makeDeposit(double& startCredit, int& deposit)
 {
 	startCredit += deposit;
@@ -32,7 +35,8 @@ void MoneyManager::makeDeposit(double& startCredit, int& deposit)
 	setCredit(startCredit);
 }
 
-void MoneyManager::makeBet(double& startCredit, double& playerBet)
+//Adds 5 to current bet
+void MoneyManager::makeBet(double startCredit, double& playerBet)
 {
 	int difference = (int)(startCredit) % 10;
 	if (playerBet < (int)startCredit  && playerBet < 100)
@@ -48,6 +52,7 @@ void MoneyManager::makeBet(double& startCredit, double& playerBet)
 	}
 }
 
+//Removes 5 from current bet
 void MoneyManager::removeBet(double& playerBet)
 {
 	int difference = (int)(playerBet) % 10;
@@ -61,7 +66,9 @@ void MoneyManager::removeBet(double& playerBet)
 	}
 }
 
-void MoneyManager::setCredit(double& startCredit)
+//Writes the current credit into a file
+
+void MoneyManager::setCredit(double startCredit)
 {
 	std::ofstream file("credit.txt", std::ios::out);
 

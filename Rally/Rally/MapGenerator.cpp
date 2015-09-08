@@ -13,6 +13,7 @@ MapGenerator::~MapGenerator()
 {
 }
 
+//Gets obstacle positions from file, depending on map chosen
 void MapGenerator::readObstaclesFromFile(std::string mapName)
 {
 	std::fstream inFile(obstacleFileName.c_str(), std::ios::in);
@@ -34,16 +35,7 @@ void MapGenerator::readObstaclesFromFile(std::string mapName)
 	inFile.close();
 }
 
-void MapGenerator::setObstacles(SDL_Rect* obstacles)
-{
-	this->obstacles = obstacles;
-}
-
-SDL_Rect* MapGenerator::getObstacles() const
-{
-	return this->obstacles;
-}
-
+//Sets the map
 void MapGenerator::chooseMap()
 {
 	difficultyNumber = distr(range);
@@ -63,6 +55,7 @@ void MapGenerator::chooseMap()
 	}
 }
 
+//Sets difficulty, time, and estimatedPlayer win
 void MapGenerator::estimateDifficulty(int& time, double& coef, double& playerBet, double& estimatedPlayerWin)
 {
 	//there are 3 levels for every difficulty
@@ -88,6 +81,7 @@ void MapGenerator::estimateDifficulty(int& time, double& coef, double& playerBet
 	}
 }
 
+//Sets starting angle based on map
 void MapGenerator::estimateStartingAngle(double& startingAngle)
 {
 	//there are 3 levels for every difficulty
@@ -113,6 +107,16 @@ void MapGenerator::setFileName(std::string fileName)
 std::string MapGenerator::getFileName() const
 {
 	return this->fileName;
+}
+
+void MapGenerator::setObstacles(SDL_Rect* obstacles)
+{
+	this->obstacles = obstacles;
+}
+
+SDL_Rect* MapGenerator::getObstacles() const
+{
+	return this->obstacles;
 }
 
 void MapGenerator::setObstacleFileName(std::string obstacleFileName)

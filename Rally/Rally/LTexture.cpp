@@ -14,6 +14,7 @@ LTexture::~LTexture()
 	free();
 }
 
+//Loads image at specified path
 bool LTexture::loadFromFile(std::string path, SDL_Renderer* gRenderer)
 {
 	//Get rid of preexisting texture
@@ -55,7 +56,9 @@ bool LTexture::loadFromFile(std::string path, SDL_Renderer* gRenderer)
 	return mTexture != NULL;
 }
 
+// If SDL_TTF is initialized creates image from font string
 #ifdef _SDL_TTF_H
+
 bool LTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor, SDL_Renderer &renderer)
 {
 	//Get rid of preexisting texture
@@ -93,6 +96,7 @@ bool LTexture::loadFromRenderedText(std::string textureText, SDL_Color textColor
 }
 #endif
 
+//Deallocates texture
 void LTexture::free()
 {
 	//Free texture if it exists
@@ -105,24 +109,28 @@ void LTexture::free()
 	}
 }
 
+//Set color modulation
 void LTexture::setColor(Uint8 red, Uint8 green, Uint8 blue)
 {
 	//Modulate texture rgb
 	SDL_SetTextureColorMod(mTexture, red, green, blue);
 }
 
+//Set blending
 void LTexture::setBlendMode(SDL_BlendMode blending)
 {
 	//Set blending function
 	SDL_SetTextureBlendMode(mTexture, blending);
 }
 
+//Set alpha modulation
 void LTexture::setAlpha(Uint8 alpha)
 {
 	//Modulate texture alpha
 	SDL_SetTextureAlphaMod(mTexture, alpha);
 }
 
+//Renders texture at given point
 void LTexture::render(SDL_Renderer& renderer, double x, double y, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip)
 {
 	//Set rendering space and render to screen
@@ -139,6 +147,7 @@ void LTexture::render(SDL_Renderer& renderer, double x, double y, SDL_Rect* clip
 	SDL_RenderCopyEx(&renderer, mTexture, clip, &renderQuad, angle, center, flip);
 }
 
+//Gets image dimensions
 int LTexture::getWidth()
 {
 	return mWidth;

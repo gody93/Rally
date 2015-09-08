@@ -7,7 +7,7 @@ PreviousGame::PreviousGame(double credit, int time, double bet, double win, doub
 	setTime(time);
 	setPlayerBet(bet);
 	setPlayerWin(win);
-	setDificulty(difficulty);
+	setDifficulty(difficulty);
 }
 
 
@@ -15,6 +15,7 @@ PreviousGame::~PreviousGame()
 {
 }
 
+//Setters for private fields
 void PreviousGame::setCredit(double credit)
 {
 	this->credit = credit;
@@ -31,29 +32,31 @@ void PreviousGame::setPlayerWin(double win)
 {
 	this->playerWin = win;
 }
-void PreviousGame::setDificulty(double coef)
+void PreviousGame::setDifficulty(double coef)
 {
-	std::string something;
+	//Converts difficulty string to char array because of random-access file writing 
+	std::string difficulty;
 	if (coef == 0.2)
 	{
-		something = "Easy";
+		difficulty = "Easy";
 	}
 	else if (coef == 0.5)
 	{
-		something = "Medium";
+		difficulty = "Medium";
 	}
 	else if (coef == 0.8)
 	{
-		something = "Hard";
+		difficulty = "Hard";
 	}
 
-	const char *nameValue = something.data();
-	int length = something.size();
+	const char *nameValue = difficulty.data();
+	int length = difficulty.size();
 	strncpy(this->difficulty, nameValue, length);
 	this->difficulty[length] = '\0';
 
 }
 
+//Getters for private fields
 double PreviousGame::getCredit() const
 {
 	return this->credit;

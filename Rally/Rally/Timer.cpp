@@ -9,19 +9,19 @@ Timer::Timer()
 	paused = false, started = false;
 }
 
-
 Timer::~Timer()
 {
 }
-
+//Start ticks
 void Timer::start()
 {
 	started = true;
 	paused = false;
-	startTicks = SDL_GetTicks();
-	pauseTicks = 0;
+	this->startTicks = SDL_GetTicks();
+	this->pauseTicks = 0;
 }
 
+//Get ticks
 Uint32 Timer::getTicks()
 {
 	Uint32 time = 0;
@@ -33,7 +33,7 @@ Uint32 Timer::getTicks()
 		}
 		else
 		{
-			time = SDL_GetTicks() - startTicks;
+			time = SDL_GetTicks() - this->startTicks;
 		}
 	}
 	return time;

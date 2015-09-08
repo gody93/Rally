@@ -1,11 +1,13 @@
 #include "XmlWriter.h"
 
+//Checks if the file exists;
 bool XmlWriter::exists(const std::string fileName)
 {
 	std::fstream checkFile(fileName);
 	return checkFile.is_open();
 }
 
+//Checks if file is open
 bool XmlWriter::open(const std::string strFile)
 {
 	outFile.open(strFile);
@@ -25,6 +27,7 @@ bool XmlWriter::open(const std::string strFile)
 	return false;
 }
 
+//Closes the file
 void XmlWriter::close()
 {
 	if (outFile.is_open())
@@ -37,6 +40,7 @@ void XmlWriter::close()
 	}
 }
 
+// Self explanatory
 void XmlWriter::writeOpenTag(const std::string openTag)
 {
 	if (outFile.is_open())
@@ -198,10 +202,10 @@ std::string XmlWriter::getCurrentTime(std::string input)
 	return input.substr(pos + 1, input.size() - pos - 2);
 }
 
+//Creates XML file with given values
 void XmlWriter::writeXmlToFile(std::string startGame, std::string endGame, int time, int realTime,
 	double startCredit, double playerBet, double playerWin, double coef)
 {
-	//Fix path -------------------------------------------------------------------------------
 	std::string path = "../../XML/";
 	std::string gameName = "Rally";
 	std::string pcName = getenv("COMPUTERNAME");

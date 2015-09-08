@@ -44,6 +44,7 @@ Car::~Car()
 	closeSounds();
 }
 
+//Sets characteristics based on user choice of car
 void Car::setCarCharacteristics(int& choosenCar)
 {
 	switch (choosenCar)
@@ -69,6 +70,7 @@ void Car::setCarCharacteristics(int& choosenCar)
 	}
 }
 
+//Moves the car towards its front 
 void Car::moveForward(int& direction)
 {
 	switch (direction)
@@ -80,6 +82,7 @@ void Car::moveForward(int& direction)
 	}
 }
 
+//Moves the car the opposite direction to its front
 void Car::moveBackward(int& direction)
 {
 	switch (direction)
@@ -91,6 +94,7 @@ void Car::moveBackward(int& direction)
 	}
 }
 
+//Accelelrates the car
 void Car::accelerate()
 {
 	moveBackward(direction);
@@ -101,6 +105,7 @@ void Car::accelerate()
 	moveForward(direction);
 }
 
+//Slows down the car if it goes out of the road
 void Car::impactSlowDown()
 {
 	moveBackward(direction);
@@ -115,6 +120,7 @@ void Car::impactSlowDown()
 	moveForward(direction);
 }
 
+//Slows down the car
 void Car::slowDown()
 {
 	moveBackward(direction);
@@ -129,6 +135,7 @@ void Car::slowDown()
 	moveForward(direction);
 }
 
+//Updates the current possition of the car
 void Car::updateCarPosition()
 {
 	if (angle >= 360)
@@ -178,6 +185,7 @@ void Car::updateCarPosition()
 	}
 }
 
+//Takes key presses and adjusts the car's velocity
 void Car::handleEvent(SDL_Event& e)
 {
 	updateCarPosition();
@@ -285,6 +293,7 @@ void Car::handleEvent(SDL_Event& e)
 	}
 }
 
+//Box collision detector
 bool Car::checkCollision(SDL_Rect a, SDL_Rect b)
 {
 	//The sides of the rectangles
@@ -330,6 +339,7 @@ bool Car::checkCollision(SDL_Rect a, SDL_Rect b)
 	return true;
 }
 
+//Moves the car and checks collision
 void Car::move(SDL_Rect wall[], int obstaclesNumber, int SCREEN_HEIGHT, int SCREEN_WIDTH)
 {
 	//Move the car left or right
@@ -380,6 +390,7 @@ void Car::move(SDL_Rect wall[], int obstaclesNumber, int SCREEN_HEIGHT, int SCRE
 	}
 }
 
+//Shows the car on the screen
 void Car::render(LTexture& gCarTexture, LTexture& gSpeedMeter, SDL_Rect gSpeedMeterClips[], SDL_Renderer& renderer)
 {
 	//Show the car
@@ -470,6 +481,7 @@ int Car::getSpeedMeterY() const
 	return this->speedMeterY;
 }
 
+//Loads engine and break sounds
 void Car::loadSounds()
 {
 	this->engine = Mix_LoadMUS("sounds/engine.mp3");
@@ -497,6 +509,7 @@ void Car::loadSounds()
 	}
 }
 
+//Frees up loaded sounds
 void Car::closeSounds()
 {
 	Mix_FreeChunk(tire);

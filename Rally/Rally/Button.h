@@ -7,6 +7,7 @@ class Button
 public:
 	//Initializes internal variables
 	Button(int,int,int,int);
+	Button();
 	~Button();
 
 	//Sets top left position
@@ -15,8 +16,10 @@ public:
 	//Handles mouse event
 	bool handleEvent(SDL_Event* e);
 
+	//Renders the button background
 	void render(SDL_Renderer &renderer);
 
+	//Loads button media
 	bool loadMedia(std::string path, SDL_Renderer &renderer);
 	
 	//Frees texture backgrounds

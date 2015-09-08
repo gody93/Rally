@@ -20,6 +20,7 @@
     <ClInclude Include="MapGenerator.h" />
     <ClInclude Include="MoneyManager.h" />
     <ClInclude Include="PreviousGame.h" />
+    <ClInclude Include="RallyInfo.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="XmlWriter.h" />
   </ItemGroup>
@@ -33,6 +34,7 @@
     <ClCompile Include="MapGenerator.cpp" />
     <ClCompile Include="MoneyManager.cpp" />
     <ClCompile Include="PreviousGame.cpp" />
+    <ClCompile Include="RallyInfo.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="XmlWriter.cpp" />
   </ItemGroup>

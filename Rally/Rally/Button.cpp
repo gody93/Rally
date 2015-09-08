@@ -1,23 +1,28 @@
 #include "Button.h"
 
-
+//Constructor
 Button::Button(int width, int height, int x, int y)
 {
 	setPosition(x, y);
 	this->buttonWidth = width;
 	this->buttonHeight = height;
 }
+Button::Button(){}
 
+//Destructor
 Button::~Button()
 {
 	free();
 }
+
+//Sets top left position
 void Button::setPosition(int x, int y)
 {
 	mPosition.x = x;
 	mPosition.y = y;
 }
 
+//Handles mouse event
 bool Button::handleEvent(SDL_Event* e)
 {
 	bool isPressed = false;
@@ -67,6 +72,14 @@ bool Button::handleEvent(SDL_Event* e)
 	return isPressed;
 }
 
+//Renders the button background
+void Button::render(SDL_Renderer &renderer)
+{
+	//Show current button sprite
+	buttonBackground.render(renderer, mPosition.x, mPosition.y);
+}
+
+//Loads button media
 bool Button::loadMedia(std::string path, SDL_Renderer &renderer)
 {
 	//Loading success flag
@@ -81,12 +94,7 @@ bool Button::loadMedia(std::string path, SDL_Renderer &renderer)
 	return success;
 }
 
-void Button::render(SDL_Renderer &renderer)
-{
-	//Show current button sprite
-	buttonBackground.render(renderer, mPosition.x, mPosition.y);
-}
-
+//Frees texture backgrounds
 void Button::free()
 {
 	buttonBackground.free();

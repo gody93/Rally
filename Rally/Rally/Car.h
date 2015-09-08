@@ -9,17 +9,25 @@ public:
 	Car(int, int, int, double, int);
 	~Car();
 
+	//Moves the car towards its front 
 	void moveForward(int&);
+	//Moves the car the opposite direction to its front
 	void moveBackward(int&);
+	//Accelelrates the car
 	void accelerate();
+	//Slows down the car
 	void slowDown();
+	//Slows down the car if it goes out of the road
 	void impactSlowDown();
+	//Updates the current possition of the car
 	void updateCarPosition();
 
 	//Takes key presses and adjusts the car's velocity
 	void handleEvent(SDL_Event& e);
 
+	//Loads engine and break sounds
 	void loadSounds();
+	//Frees up loaded sounds
 	void closeSounds();
 
 	//Moves the car and checks collision
@@ -31,8 +39,10 @@ public:
 	//Shows the car on the screen
 	void render(LTexture&, LTexture&, SDL_Rect[], SDL_Renderer&);
 
+	//Sets characteristics based on user choice of car
 	void setCarCharacteristics(int&);
-
+	
+	//Self explanatory
 	void setCarX(double);
 	double getCarX() const;
 

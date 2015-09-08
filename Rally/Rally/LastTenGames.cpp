@@ -8,12 +8,14 @@ LastTenGames::~LastTenGames()
 {
 }
 
+//Checks if file exists;
 bool LastTenGames::fileExist(const char* fileName)
 {
 	std::ifstream infile(fileName);
 	return infile.good();
 }
 
+//Creates blank file with empty default constructor,if the file doesn't exist
 void LastTenGames::createBlankFile()
 {
 	if (!fileExist("previousGames.txt"))
@@ -34,8 +36,9 @@ void LastTenGames::createBlankFile()
 	}
 }
 
+//Moves all records one position lower, and writes latest game at top of file;
 void LastTenGames::writeLastTenGames(std::fstream& readfile, 
-	double& startCredit, int& realTime, double& playerBet, double& playerWin, double& coef)
+	double startCredit, int realTime, double playerBet, double playerWin, double coef)
 {
 	PreviousGame blankGame;
 	PreviousGame currentGame(startCredit, realTime, playerBet, playerWin, coef);
@@ -51,6 +54,7 @@ void LastTenGames::writeLastTenGames(std::fstream& readfile,
 	readfile.write(reinterpret_cast<const char*>(&currentGame), sizeof(PreviousGame));
 }
 
+//Saves information from previousGames.txt in vector;
 std::vector<PreviousGame> LastTenGames::readLastTenGames(std::fstream& fileToRead)
 {
 	PreviousGame tempGame;

@@ -1,14 +1,17 @@
 #include "Application.h"
 
+//Constructor	
 Application::Application() : SCREEN_WIDTH(920), SCREEN_HEIGHT(665), gWindow(NULL), gRenderer(NULL), startingAngle(0), screenFPS(24)
 {
 }
 
+//Destructor
 Application::~Application()
 {
 	close();
 }
 
+//Starts up SDL and creates window
 bool Application::init()
 {
 	//Initialization flag
@@ -71,7 +74,7 @@ bool Application::init()
 				if (flags != (result = Mix_Init(flags))) {
 					printf("Could not initialize mixer (result: %d).\n", result);
 					printf("Mix_Init: %s\n", Mix_GetError());
-					exit(1);
+					std::exit(1);
 				}
 			}
 		}
@@ -80,13 +83,21 @@ bool Application::init()
 	return success;
 }
 
+//Loads media
 bool Application::loadMedia(int car)
 {
 	//Loading success flag
 	bool success = true;
 
+	int time = 0;
+	double coef = 0;
+	double playerBet = gameData.getPlayerBet();
+
 	map.chooseMap();
 	map.estimateDifficulty(time, coef, playerBet, estimatedPlayerWin);
+	gameData.setTime(time);
+	gameData.setCoef(coef);
+	gameData.setPlayerBet(playerBet);
 	map.readObstaclesFromFile(map.getFileName());
 
 	if (!gBackgroundTexture.loadFromFile(map.getFileName(), gRenderer))
@@ -99,21 +110,21 @@ bool Application::loadMedia(int car)
 
 	switch (car)
 	{
-	case carOne:
+	case CAR_ONE:
 		if (!gFirstCarTexture.loadFromFile("img/cars/carOne.png", gRenderer))
 		{
 			printf("Failed to load car texture!\n");
 			success = false;
 		}
 		break;
-	case carTwo:
+	case CAR_TWO:
 		if (!gSecondCarTexture.loadFromFile("img/cars/carTwo.png", gRenderer))
 		{
 			printf("Failed to load car texture!\n");
 			success = false;
 		}
 		break;
-	case carThree:
+	case CAR_THREE:
 		if (!gThirdCarTexture.loadFromFile("img/cars/carThree.png", gRenderer))
 		{
 			printf("Failed to load car texture!\n");
@@ -153,12 +164,13 @@ bool Application::loadMedia(int car)
 			gSpeedMeterClips[i].x = i * SPEED_METER_WIDTH;
 			gSpeedMeterClips[i].y = 0;
 			gSpeedMeterClips[i].w = SPEED_METER_WIDTH;
-			gSpeedMeterClips[i].h = SPEED_METER_HEIGHT;				
+			gSpeedMeterClips[i].h = SPEED_METER_HEIGHT;
 		}
 	}
 	return success;
 }
 
+//Frees media and shuts down SDL
 void Application::close()
 {
 	//Destroy window	
@@ -175,12 +187,16 @@ void Application::close()
 	Mix_FreeMusic(menuBackgroundSound);
 	menuBackgroundSound = NULL;
 
+	freeButtonPointers();
+	freeTextPointers();
+
 	//Quit SDL subsystems
 	IMG_Quit();
 	SDL_Quit();
 	Mix_Quit();
 }
 
+//Displays the menu of the game
 void Application::menu()
 {
 	if (gWindow == NULL)
@@ -194,94 +210,20 @@ void Application::menu()
 	menuBackgroundSound = Mix_LoadMUS("sounds/menu_background.mp3");
 	Mix_PlayMusic(menuBackgroundSound, 10);
 	LTexture menuBackgroundTexture;
-	// menuBackgroundTexture.free();
-	int buttonWidth = 160, buttonHeight = 50;
 	int start = 0;
 
 	//------------BUTTONS------------
-	Button exitButton(buttonWidth, buttonHeight, 370, 600);
-	Button startButton(buttonWidth, buttonHeight, 370, 200);
-	Button instructionsButton(buttonWidth, buttonHeight, 650, 370);
-	Button addDepositButton(buttonHeight, buttonHeight, 90, 135);
-	Button removeDepositButton(buttonHeight, buttonHeight, 200, 135);
-	Button makeDepositButton(buttonWidth, buttonHeight, 77, 180);
-	Button addBetButton(buttonHeight, buttonHeight, 665, 135);
-	Button removeBetButton(buttonHeight, buttonHeight, 775, 135);
-	Button betButton(buttonWidth, buttonHeight, 650, 180);
-	Button lastTenGamesButton(250, buttonHeight, 72, 370);
-	Button onMusicButton(45, buttonHeight, 830, 10);
-	Button offMusicButton(45, buttonHeight, 830, 10);
+	loadButtonMedia();
 
-	//------------Text--------------
-	LTexture menuTitle;
-	LTexture exitButtonText;
-	LTexture startButtonText;
-	LTexture instructionText;
-	LTexture creditText;
-	LTexture creditNumber;
-	LTexture depositNum;
-	LTexture makeDepositText;
-	LTexture betNum;
-	LTexture betText;
-	LTexture highScoresText;
-	LTexture insertCreditText;
-	LTexture insertCreditTextTwo;
-	LTexture insertCreditTextThree;
-	LTexture insertCreditTextFour;
-
+	//--------------TEXT LOADING---------
+	loadText();
 
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
-	SDL_Color textYellow = { 0xFF, 0xFF, 0xFF };
-	SDL_Color textRed = { 0xFF, 0x00, 0x00 };
-	SDL_Color textGreen = { 0x00, 0xCC, 0x00 };
-	SDL_Color textBlue = { 0x33, 0x66, 0xFF };
-
 
 	//-------------BUTTON SET POS & BACKGROUND----------
 	menuBackgroundTexture.loadFromFile("img/menu.png", gRenderer);
 
-	startButton.loadMedia("img/buttons/button.png", *gRenderer);
-
-	exitButton.loadMedia("img/buttons/button.png", *gRenderer);
-
-	instructionsButton.loadMedia("img/buttons/button.png", *gRenderer);
-
-	lastTenGamesButton.loadMedia("img/buttons/buttonOne.png", *gRenderer);
-
-	addDepositButton.loadMedia("img/buttons/button-add.png", *gRenderer);
-
-	removeDepositButton.loadMedia("img/buttons/button-remove.png", *gRenderer);
-
-	makeDepositButton.loadMedia("img/buttons/button.png", *gRenderer);
-
-	addBetButton.loadMedia("img/buttons/button-add.png", *gRenderer);
-
-	removeBetButton.loadMedia("img/buttons/button-remove.png", *gRenderer);
-
-	onMusicButton.loadMedia("img/onMusic.png", *gRenderer);
-
-	offMusicButton.loadMedia("img/offMusic.png", *gRenderer);
-
-	betButton.loadMedia("img/buttons/button.png", *gRenderer);
-
-	//--------------TEXT LOADING---------
-
-	menuTitle.loadFromRenderedText("Rally EGT", textColor, *gRenderer);
-	startButtonText.loadFromRenderedText("Play", textColor, *gRenderer);
-	exitButtonText.loadFromRenderedText("Exit Game", textColor, *gRenderer);
-	instructionText.loadFromRenderedText("Instructions", textColor, *gRenderer);
-	highScoresText.loadFromRenderedText("Last Ten Games", textColor, *gRenderer);
-	creditText.loadFromRenderedText("Your credit: ", textColor, *gRenderer);
-	creditNumber.loadFromRenderedText(std::to_string((int)this->startCredit), textColor, *gRenderer);
-	depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
-	makeDepositText.loadFromRenderedText("Make Deposit", textColor, *gRenderer);
-	betNum.loadFromRenderedText(std::to_string((int)(playerBet)), textColor, *gRenderer);
-	betText.loadFromRenderedText("Your Bet", textColor, *gRenderer);
-	insertCreditText.loadFromRenderedText("Insert Credit", textRed, *gRenderer);
-	insertCreditTextTwo.loadFromRenderedText("Insert Credit", textYellow, *gRenderer);
-	insertCreditTextThree.loadFromRenderedText("Insert Credit", textBlue, *gRenderer);
-	insertCreditTextFour.loadFromRenderedText("Insert Credit", textGreen, *gRenderer);
-
+	
 	lastTenGamesManager.createBlankFile();
 	std::fstream gameFile("previousGames.txt", std::ios::out | std::ios::in);
 
@@ -291,8 +233,7 @@ void Application::menu()
 	//Event handler
 	SDL_Event e;
 	const int screenTicksPF = 1000 / screenFPS;
-	Timer fpsTimer;
-	Timer capTimer;
+	Timer fpsTimer, capTimer;
 	fpsTimer.start();
 
 	//While application is running
@@ -303,182 +244,96 @@ void Application::menu()
 		while (SDL_PollEvent(&e) != 0)
 		{
 			//User requests quit
-			if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE || exitButton.handleEvent(&e))
+			if (e.type == SDL_QUIT || e.key.keysym.sym == SDLK_ESCAPE || exitButton->handleEvent(&e))
 			{
 				quit = true;
 				gameFile.close();
 			}
-			else if (onMusicButton.handleEvent(&e))
+			else if (onMusicButton->handleEvent(&e))
 			{
-				if (isMusicOn)
-				{
-					isMusicOn = false;
-					Mix_PauseMusic();
-				}
-				else
-				{
-					isMusicOn = true;
-					if (Mix_PausedMusic() == 1)
-					{
-						Mix_ResumeMusic();
-					}
-					else
-					{
-						Mix_PlayMusic(menuBackgroundSound, 10);
-					}
-
-				}
+				checkMusic();
 			}
-			else if (startButton.handleEvent(&e) && playerBet > 0)
+			else if (startButton->handleEvent(&e) && gameData.getPlayerBet() > 0)
 			{
-				moneyManager.setCredit(this->startCredit);
+				moneyManager.setCredit(gameData.getStartCredit());
 				startTimeTemp = SDL_GetTicks();
 				this->deposit = 0;
-				depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
-				int chosenCar = chooseCar(gRenderer, onMusicButton, offMusicButton);
+				depositNum->loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
+				int chosenCar = chooseCar(gRenderer);
 				if (chosenCar != 0)
 				{
-					gameStart(gameFile, chosenCar, onMusicButton, offMusicButton);
+					gameStart(gameFile, chosenCar);
 				}
 				else
 				{
-					continue;
+					continue;//if escape is pressed returns to main loop
 				}
 				if (isMusicOn)
 				{
 					Mix_PlayMusic(menuBackgroundSound, 10);
 				}
-				moneyManager.setCredit(this->startCredit);
-				betNum.loadFromRenderedText(std::to_string((int)(playerBet)), textColor, *gRenderer);
-				creditNumber.loadFromRenderedText(std::to_string((int)(this->startCredit)), textColor, *gRenderer);
+				moneyManager.setCredit(gameData.getStartCredit());
+				betNum->loadFromRenderedText(std::to_string((int)gameData.getPlayerBet()), textColor, *gRenderer);
+				creditNumber->loadFromRenderedText(std::to_string((int)gameData.getStartCredit()), textColor, *gRenderer);
 			}
-			else if (instructionsButton.handleEvent(&e))
+			else if (instructionsButton->handleEvent(&e))
 			{
-				instructionsScreen(onMusicButton, offMusicButton);
+				instructionsScreen();
 			}
-			else if (lastTenGamesButton.handleEvent(&e))
+			else if (lastTenGamesButton->handleEvent(&e))
 			{
-				lastTenGamesScreen(gameFile, onMusicButton, offMusicButton);
+				lastTenGamesScreen(gameFile);
 			}
-			else if (addDepositButton.handleEvent(&e))
+			else if (addDepositButton->handleEvent(&e))
 			{
 				moneyManager.addDeposit(this->deposit);
-				depositNum.loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
+				depositNum->loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
 			}
-			else if (removeDepositButton.handleEvent(&e))
+			else if (removeDepositButton->handleEvent(&e))
 			{
 				moneyManager.removeDeposit(this->deposit);
-				depositNum.loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
+				depositNum->loadFromRenderedText(std::to_string(deposit), textColor, *gRenderer);
 			}
-			else if (makeDepositButton.handleEvent(&e))
+			else if (makeDepositButton->handleEvent(&e))
 			{
-				moneyManager.makeDeposit(this->startCredit, this->deposit);
-				creditNumber.loadFromRenderedText(std::to_string((int)(this->startCredit)), textColor, *gRenderer);
-				depositNum.loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
+				double startCredit = gameData.getStartCredit();
+				moneyManager.makeDeposit(startCredit, this->deposit);
+				gameData.setStartCredit(startCredit);
+				creditNumber->loadFromRenderedText(std::to_string((int)gameData.getStartCredit()), textColor, *gRenderer);
+				depositNum->loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
 			}
-			else if (addBetButton.handleEvent(&e))
+			else if (addBetButton->handleEvent(&e))
 			{
-				moneyManager.makeBet(this->startCredit, this->playerBet);
-				betNum.loadFromRenderedText(std::to_string((int)(playerBet)), textColor, *gRenderer);
+				double playerBet = gameData.getPlayerBet();
+				moneyManager.makeBet(gameData.getStartCredit(), playerBet);
+				gameData.setPlayerBet(playerBet);
+				betNum->loadFromRenderedText(std::to_string((int)gameData.getPlayerBet()), textColor, *gRenderer);
 			}
-			else if (removeBetButton.handleEvent(&e))
+			else if (removeBetButton->handleEvent(&e))
 			{
-				moneyManager.removeBet(this->playerBet);
-				betNum.loadFromRenderedText(std::to_string((int)(playerBet)), textColor, *gRenderer);
+				double playerBet = gameData.getPlayerBet();
+				moneyManager.removeBet(playerBet);
+				gameData.setPlayerBet(playerBet);
+				betNum->loadFromRenderedText(std::to_string((int)gameData.getPlayerBet()), textColor, *gRenderer);
 			}
 		}
 		//--------------CLEAR SCREEN-----------
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
 
-
-		//-------------RENDER BACKGROUNDS----------
 		menuBackgroundTexture.render(*gRenderer, 0, 0);
-		startButton.render(*gRenderer);
-		exitButton.render(*gRenderer);
-		startButton.render(*gRenderer);
-		instructionsButton.render(*gRenderer);
-		lastTenGamesButton.render(*gRenderer);
-		addDepositButton.render(*gRenderer);
-		removeDepositButton.render(*gRenderer);
-		makeDepositButton.render(*gRenderer);
-		addBetButton.render(*gRenderer);
-		removeBetButton.render(*gRenderer);
-		betButton.render(*gRenderer);
-		if (isMusicOn)
-		{
-			onMusicButton.render(*gRenderer);
-		}
-		else
-		{
-			offMusicButton.render(*gRenderer);
-		}
+		renderMenuTextures();
 
-		//------------TEXT RENDERING --------------
-		menuTitle.render(*gRenderer, (SCREEN_WIDTH - menuTitle.getWidth()) / 2, 100);
-		startButtonText.render(*gRenderer, (SCREEN_WIDTH - startButtonText.getWidth()) / 2, 215);
-		exitButtonText.render(*gRenderer, (SCREEN_WIDTH - exitButtonText.getWidth()) / 2, 614);
-		instructionText.render(*gRenderer, 675, 385);
-		highScoresText.render(*gRenderer, 105, 385);
-		if (this->startCredit != 0)
+		if (gameData.getStartCredit() != 0)
 		{
-			creditText.render(*gRenderer, 50, 50);
-			creditNumber.render(*gRenderer, 220, 50);
+			creditText->render(*gRenderer, 50, 50);
+			creditNumber->render(*gRenderer, 220, 50);
 		}
 		else
 		{
-			if (start == 0)
-			{
-				insertCreditText.render(*gRenderer, 100, 50);
-			}
-			else if (start == 1)
-			{
-				insertCreditTextTwo.render(*gRenderer, 100, 50);
-			}
-			else if (start == 2)
-			{
-				insertCreditTextThree.render(*gRenderer, 100, 50);
-			}
-			else if (start == 3)
-			{
-				insertCreditTextFour.render(*gRenderer, 100, 50);
-			}
+			blinkingEffect(start);
 			start++;
-			if (start == 4)
-			{
-				start /= 4;
-			}
 		}
-		if (this->deposit < 10)
-		{
-			depositNum.render(*gRenderer, 157, 150);
-		}
-		else if (this->deposit < 100)
-		{
-			depositNum.render(*gRenderer, 147, 150);
-		}
-		else if (this->deposit == 100)
-		{
-			depositNum.render(*gRenderer, 142, 150);
-		}
-
-		makeDepositText.render(*gRenderer, 92, 197);
-
-		if (this->playerBet < 10)
-		{
-			betNum.render(*gRenderer, 734, 150);
-		}
-		else if (this->playerBet < 100)
-		{
-			betNum.render(*gRenderer, 724, 150);
-		}
-		else if (this->playerBet == 100)
-		{
-			betNum.render(*gRenderer, 719, 150);
-		}
-
-		betText.render(*gRenderer, 691, 197);
-
 
 		//------------- UPDATE SCREEN----------------
 		SDL_RenderPresent(gRenderer);
@@ -491,7 +346,8 @@ void Application::menu()
 	}
 }
 
-void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& onMusicButton, Button& offMusicButton)
+//Displays the actual game with car handling
+void Application::gameStart(std::fstream& fileToRead, int& choosenCar)
 {
 	if (gWindow != NULL)
 	{
@@ -500,32 +356,29 @@ void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& o
 			printf("Failed to load media!\n");
 		}
 	}
-
 	//Main loop flag
 	bool quit = false;
-
-	int timeTemp = this->time;
 
 	//Event handler
 	SDL_Event e;
 	SDL_Color textColor = { 0xFF, 0xFF, 0xFF, 0xFF };
 	LTexture timeTexture;
-
-	//
+	int timeTemp = gameData.getTime();
+	const int mapFinishX = 870;
+	const int mapFinishY = 620;
 	bool firstRun = true;
 
 	switch (choosenCar)
 	{
-		case carOne: gCarTexture = gFirstCarTexture; break;
-		case carTwo: gCarTexture = gSecondCarTexture; break;
-		case carThree: gCarTexture = gThirdCarTexture; break;
+	case CAR_ONE: gCarTexture = gFirstCarTexture; break;
+	case CAR_TWO: gCarTexture = gSecondCarTexture; break;
+	case CAR_THREE: gCarTexture = gThirdCarTexture; break;
 	}
 
 	//The car that will be moving around on the screen
 	Car car(choosenCar, gCarTexture.getWidth(), gCarTexture.getHeight(), startingAngle, map.getDifficulty());
 	SDL_Rect* wall = map.getObstacles();
-	this->startGame = obj.getCurrentTime(obj.getCurrentDateTime());
-
+	gameData.setStartGame(obj.getCurrentTime(obj.getCurrentDateTime()));
 	if (isMusicOn)
 	{
 		car.loadSounds();
@@ -540,54 +393,26 @@ void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& o
 			//Handle input for the car
 			car.handleEvent(e);
 
-			if (onMusicButton.handleEvent(&e))
+			if (onMusicButton->handleEvent(&e))
 			{
-				if (isMusicOn)
-				{
-					isMusicOn = false;
-					car.closeSounds();
-				}
-				else
-				{
-					isMusicOn = true;
-					car.loadSounds();
-				}
+				checkMusicInGame(car, e);
 			}
 		}
-
 		if (firstRun)
 		{
-			if (isMusicOn)
-			{
-				loadingScreen(gRenderer, timeTexture, textColor, car, onMusicButton);
-			}
-			else
-			{
-				loadingScreen(gRenderer, timeTexture, textColor, car, offMusicButton);
-			}
+			loadingScreen(gRenderer, timeTexture, textColor, car);
 			firstRun = false;
 		}
-
 		//Clear screen
 		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
 		SDL_RenderClear(gRenderer);
 
 		gBackgroundTexture.render(*gRenderer, 0, 0);
-
 		timeTexture.render(*gRenderer, 620, 10);
+		renderMusicButton();
 
-		if (isMusicOn)
+		if (SDL_GetTicks() - startTimeTemp >= ONE_SECOND)
 		{
-			onMusicButton.render(*gRenderer);
-		}
-		else
-		{
-			offMusicButton.render(*gRenderer);
-		}
-
-		if (SDL_GetTicks() - startTimeTemp >= 1000)
-		{
-
 			if (!timeTexture.loadFromRenderedText(timer(timeTemp), textColor, *gRenderer))
 			{
 				printf("Unable to render time texture!\n");
@@ -605,48 +430,13 @@ void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& o
 		if (timeTemp < 0)
 		{
 			//YOU LOSE
-			this->endGame = obj.getCurrentTime(obj.getCurrentDateTime());
-			this->realTime = this->time;
-			this->playerWin = 0;
-
-			obj.writeXmlToFile(this->startGame, this->endGame, this->time, this->realTime,
-				this->startCredit, this->playerBet, this->playerWin, this->coef);
-
-			this->startCredit = this->startCredit - this->playerBet;
-			lastTenGamesManager.writeLastTenGames(fileToRead, this->startCredit, this->realTime, this->playerBet, this->playerWin, this->coef);
-			this->playerBet = 0;
-			Mix_HaltMusic();
-			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-			SDL_RenderClear(gRenderer);
-
-			youLose.render(*gRenderer, 0, 0);
-
-			SDL_RenderPresent(gRenderer);
-			SDL_Delay(1500);
+			caseYouLose(fileToRead);
 			return;
 		}
-		else if (car.getCarX() >= 870 && car.getCarY() >= 620)
+		else if (car.getCarX() >= mapFinishX && car.getCarY() >= mapFinishY)
 		{
 			//YOU WIN
-			this->endGame = obj.getCurrentTime(obj.getCurrentDateTime());
-			this->realTime = this->time - timeTemp;
-			this->playerWin = this->estimatedPlayerWin;
-
-			obj.writeXmlToFile(this->startGame, this->endGame, this->time, this->realTime,
-				this->startCredit, this->playerBet, this->playerWin, this->coef);
-
-			this->startCredit = this->startCredit + this->playerWin;
-			lastTenGamesManager.writeLastTenGames(fileToRead, this->startCredit, this->realTime, this->playerBet, this->playerWin, this->coef);
-			this->playerBet = 0;
-			Mix_HaltMusic();
-			SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-			SDL_RenderClear(gRenderer);
-
-			youWin.render(*gRenderer, 0, 0);
-
-			SDL_RenderPresent(gRenderer);
-			SDL_Delay(1500);
-
+			caseYouWin(fileToRead);
 			return;
 		}
 		//Render car
@@ -657,7 +447,59 @@ void Application::gameStart(std::fstream& fileToRead, int& choosenCar, Button& o
 	}
 }
 
-void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, SDL_Color& textColor, Car &car, Button& musicButton)
+void Application::caseYouWin(std::fstream& fileToRead)
+{
+	Mix_HaltMusic();
+
+	gameData.setEndGame(obj.getCurrentTime(obj.getCurrentDateTime()));
+	gameData.setRealTime(gameData.getTime() - this->timeTemp);
+	gameData.setPlayerWin(this->estimatedPlayerWin);
+
+	obj.writeXmlToFile(gameData.getStartGame(), gameData.getEndGame(), gameData.getTime(), gameData.getRealTime(),
+		gameData.getStartCredit(), gameData.getPlayerBet(), gameData.getPlayerWin(), gameData.getCoef());
+
+	gameData.setStartCredit(gameData.getStartCredit() + gameData.getPlayerWin());
+	lastTenGamesManager.writeLastTenGames(fileToRead, gameData.getStartCredit(), gameData.getRealTime(),
+		gameData.getPlayerBet(), gameData.getPlayerWin(), gameData.getCoef());
+
+	gameData.setPlayerBet(0);
+
+	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_RenderClear(gRenderer);
+
+	youWin.render(*gRenderer, 0, 0);
+
+	SDL_RenderPresent(gRenderer);
+	SDL_Delay(1500);
+}
+
+void Application::caseYouLose(std::fstream& fileToRead)
+{
+	Mix_HaltMusic();
+	gameData.setEndGame(obj.getCurrentTime(obj.getCurrentDateTime()));
+	gameData.setRealTime(gameData.getTime());
+	gameData.setPlayerWin(0);
+
+	obj.writeXmlToFile(gameData.getStartGame(), gameData.getEndGame(), gameData.getTime(), gameData.getRealTime(),
+		gameData.getStartCredit(), gameData.getPlayerBet(), gameData.getPlayerWin(), gameData.getCoef());
+
+	gameData.setStartCredit(gameData.getStartCredit() - gameData.getPlayerBet());
+	lastTenGamesManager.writeLastTenGames(fileToRead, gameData.getStartCredit(), gameData.getRealTime(),
+		gameData.getPlayerBet(), gameData.getPlayerWin(), gameData.getCoef());
+
+	gameData.setPlayerBet(0);
+
+	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+	SDL_RenderClear(gRenderer);
+
+	youLose.render(*gRenderer, 0, 0);
+
+	SDL_RenderPresent(gRenderer);
+	SDL_Delay(1500);
+}
+
+//Does a countdown before the start of the race
+void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, SDL_Color& textColor, Car &car)
 {
 	LTexture one, two, three;
 
@@ -665,12 +507,10 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 	{
 		printf("Failed to load one.png !\n");
 	}
-
 	if (!two.loadFromFile("img/Two.png", gRenderer))
 	{
 		printf("Failed to load two.png!\n");
 	}
-
 	if (!three.loadFromFile("img/Three.png", gRenderer))
 	{
 		printf("Failed to load three.png !\n");
@@ -687,77 +527,42 @@ void Application::loadingScreen(SDL_Renderer* gRenderer, LTexture& timeTexture, 
 	{
 		printf("Failed to load go.wav !\n");
 	}
-	//Clear screen
-	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderClear(gRenderer);
 
-	gBackgroundTexture.render(*gRenderer, 0, 0);
-	musicButton.render(*gRenderer);
-	three.render(*gRenderer, 0, 0);
-
-
-	timeTexture.loadFromRenderedText(timer(this->time), textColor, *gRenderer);
-	car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
-	timeTexture.render(*gRenderer, 620, 10);
-
-	if (isMusicOn)
+	for (int i = 3; i > 0; i--)
 	{
-		Mix_PlayChannel(-1, beep, 0);
+		//Clear screen
+		SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+		SDL_RenderClear(gRenderer);
+
+		gBackgroundTexture.render(*gRenderer, 0, 0);
+		renderMusicButton();
+		switch (i)
+		{
+		case 1: one.render(*gRenderer, 0, 0); break;
+		case 2: two.render(*gRenderer, 0, 0); break;
+		case 3: three.render(*gRenderer, 0, 0); break;
+		}
+
+		timeTexture.loadFromRenderedText(timer(gameData.getTime()), textColor, *gRenderer);
+		car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
+		timeTexture.render(*gRenderer, 620, 10);
+
+		if (isMusicOn)
+		{
+			Mix_PlayChannel(-1, beep, 0);
+		}
+		SDL_RenderPresent(gRenderer);
+		SDL_Delay(1000);
 	}
-	SDL_RenderPresent(gRenderer);
-	SDL_Delay(1000);
-
-	///
-
-	//Clear screen
-	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderClear(gRenderer);
-
-	gBackgroundTexture.render(*gRenderer, 0, 0);
-	musicButton.render(*gRenderer);
-	two.render(*gRenderer, 0, 0);
-
-	timeTexture.loadFromRenderedText(timer(this->time), textColor, *gRenderer);
-	timeTexture.render(*gRenderer, 620, 10);
-	car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
-
-	if (isMusicOn)
-	{
-		Mix_PlayChannel(-1, beep, 0);
-	}
-	SDL_RenderPresent(gRenderer);
-	SDL_Delay(1000);
-
-	///
-
-	//Clear screen
-	SDL_SetRenderDrawColor(gRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
-	SDL_RenderClear(gRenderer);
-
-	gBackgroundTexture.render(*gRenderer, 0, 0);
-	musicButton.render(*gRenderer);
-	one.render(*gRenderer, 0, 0);
-
-	timeTexture.loadFromRenderedText(timer(this->time), textColor, *gRenderer);
-	timeTexture.render(*gRenderer, 620, 10);
-	car.render(gCarTexture, gSpeedMeter, gSpeedMeterClips, *gRenderer);
-
-	if (isMusicOn)
-	{
-		Mix_PlayChannel(-1, beep, 0);
-	}
-	SDL_RenderPresent(gRenderer);
-	SDL_Delay(1000);
 	if (isMusicOn)
 	{
 		Mix_PlayChannel(-1, go, 0);
 	}
-
 }
 
-void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButton)
+//Displays rules and how to play instructions
+void Application::instructionsScreen()
 {
-
 	if (gWindow == NULL)
 	{
 		printf("Failed to load media!\n");
@@ -828,7 +633,7 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 			{
 				quit = true;
 			}
-			else if (onMusicButton.handleEvent(&e))
+			else if (onMusicButton->handleEvent(&e))
 			{
 				if (isMusicOn)
 				{
@@ -879,11 +684,11 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 
 		if (isMusicOn)
 		{
-			onMusicButton.render(*gRenderer);
+			onMusicButton->render(*gRenderer);
 		}
 		else
 		{
-			offMusicButton.render(*gRenderer);
+			offMusicButton->render(*gRenderer);
 		}
 
 
@@ -892,7 +697,8 @@ void Application::instructionsScreen(Button& onMusicButton, Button& offMusicButt
 	}
 }
 
-void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicButton, Button& offMusicButton)
+//Displays last ten games on screen
+void Application::lastTenGamesScreen(std::fstream& fileToRead)
 {
 	if (gWindow == NULL)
 	{
@@ -941,15 +747,12 @@ void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicBu
 	back.setPosition(370, 600);
 	back.loadMedia("img/buttons/button.png", *gRenderer);
 
-
-
 	//------------------TEXT LOADING-------------------
 	backText.loadFromRenderedText("Back", textColor, *gRenderer);
 	description.loadFromRenderedText(descriptionText, textColor, *gRenderer);
 
 	//Event handler
 	SDL_Event e;
-
 
 	//While application is running
 	while (!quit)
@@ -962,18 +765,9 @@ void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicBu
 			{
 				quit = true;
 			}
-			else if (onMusicButton.handleEvent(&e))
+			else if (onMusicButton->handleEvent(&e))
 			{
-				if (isMusicOn)
-				{
-					isMusicOn = false;
-					Mix_PauseMusic();
-				}
-				else
-				{
-					isMusicOn = true;
-					Mix_ResumeMusic();
-				}
+				checkMusic();
 			}
 			else if (e.key.keysym.sym == SDLK_ESCAPE)
 			{
@@ -1028,29 +822,23 @@ void Application::lastTenGamesScreen(std::fstream& fileToRead, Button& onMusicBu
 			}
 			xPos += 45;
 		}
-		if (isMusicOn)
-		{
-			onMusicButton.render(*gRenderer);
-		}
-		else
-		{
-			offMusicButton.render(*gRenderer);
-		}
+		renderMusicButton();
 
 		//------------- UPDATE SCREEN----------------
 		SDL_RenderPresent(gRenderer);
 	}
 }
 
-int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Button& offMusicButton)
+//User chooses preferred car
+int Application::chooseCar(SDL_Renderer* gRenderer)
 {
 	if (gWindow == NULL)
 	{
 		printf("Failed to load screen!\n");
 	}
 
-	bool quit = false;
 	//Main loop flag
+	bool quit = false;
 	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
 	Button back(160, 50, 370, 600);
 	LTexture backgroundTexture;
@@ -1082,12 +870,10 @@ int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Butto
 	back.setPosition(370, 600);
 	back.loadMedia("img/buttons/button.png", *gRenderer);
 
-
 	//---------------CAR PICTURES----------------
 	carOne.loadFromFile("img/cars/carOneLarge.png", gRenderer);
 	carTwo.loadFromFile("img/cars/carTwoLarge.png", gRenderer);
 	carThree.loadFromFile("img/cars/carThreeLarge.png", gRenderer);
-
 
 	//------------------TEXT LOADING-------------------
 	backText.loadFromRenderedText("Back", textColor, *gRenderer);
@@ -1106,18 +892,9 @@ int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Butto
 			{
 				quit = true;
 			}
-			else if (onMusicButton.handleEvent(&e))
+			else if (onMusicButton->handleEvent(&e))
 			{
-				if (isMusicOn)
-				{
-					isMusicOn = false;
-					Mix_PauseMusic();
-				}
-				else
-				{
-					isMusicOn = true;
-					Mix_ResumeMusic();
-				}
+				checkMusic();
 			}
 			else if (e.type == SDL_MOUSEBUTTONUP)
 			{
@@ -1180,15 +957,7 @@ int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Butto
 		carTwo.render(*gRenderer, 400, 100);
 		carThree.render(*gRenderer, 600, 100);
 		cursor.render(*gRenderer, cursorX, cursorY);
-
-		if (isMusicOn)
-		{
-			onMusicButton.render(*gRenderer);
-		}
-		else
-		{
-			offMusicButton.render(*gRenderer);
-		}
+		renderMusicButton();
 
 		if (cursorX == 190)
 		{
@@ -1209,6 +978,18 @@ int Application::chooseCar(SDL_Renderer* gRenderer, Button& onMusicButton, Butto
 	return 0;
 }
 
+//Visualize obstacles
+void Application::drawObstaclesHelper(SDL_Renderer& renderer, SDL_Rect* wall, int obstacleNumber)
+{
+	for (int i = 0; i < obstacleNumber; i++)
+	{
+		SDL_Rect* tempWall = &wall[i];
+		SDL_SetRenderDrawColor(&renderer, 0xFF, 0x00, 0x00, 0xFF);
+		SDL_RenderDrawRect(&renderer, tempWall);
+	}
+}
+
+//Time texture in-game
 std::string Application::timer(int availiableTime)
 {
 	int seconds = availiableTime;
@@ -1218,12 +999,252 @@ std::string Application::timer(int availiableTime)
 	return timeText;
 }
 
-void Application::drawObstaclesHelper(SDL_Renderer& renderer, SDL_Rect* wall, int obstacleNumber)
+//Loads button media
+void Application::loadButtonMedia()
 {
-	for (int i = 0; i < obstacleNumber; i++)
+	startButton->loadMedia("img/buttons/button.png", *gRenderer);
+
+	exitButton->loadMedia("img/buttons/button.png", *gRenderer);
+
+	instructionsButton->loadMedia("img/buttons/button.png", *gRenderer);
+
+	lastTenGamesButton->loadMedia("img/buttons/buttonOne.png", *gRenderer);
+
+	addDepositButton->loadMedia("img/buttons/button-add.png", *gRenderer);
+
+	removeDepositButton->loadMedia("img/buttons/button-remove.png", *gRenderer);
+
+	makeDepositButton->loadMedia("img/buttons/button.png", *gRenderer);
+
+	addBetButton->loadMedia("img/buttons/button-add.png", *gRenderer);
+
+	removeBetButton->loadMedia("img/buttons/button-remove.png", *gRenderer);
+
+	onMusicButton->loadMedia("img/onMusic.png", *gRenderer);
+
+	offMusicButton->loadMedia("img/offMusic.png", *gRenderer);
+
+	betButton->loadMedia("img/buttons/button.png", *gRenderer);
+}
+
+//Deletes button pointers
+void Application::freeButtonPointers()
+{
+	delete this->exitButton;
+	exitButton = NULL;
+	delete this->startButton;
+	startButton = NULL;
+	delete this->instructionsButton;
+	instructionsButton = NULL;
+	delete this->addDepositButton;
+	addDepositButton = NULL;
+	delete this->removeDepositButton;
+	removeDepositButton = NULL;
+	delete this->makeDepositButton;
+	makeDepositButton = NULL;
+	delete this->addBetButton;
+	addBetButton = NULL;
+	delete this->removeBetButton;
+	removeBetButton = NULL;
+	delete this->betButton;
+	betButton = NULL;
+	delete this->lastTenGamesButton;
+	lastTenGamesButton = NULL;
+	delete this->onMusicButton;
+	onMusicButton = NULL;
+	delete this->offMusicButton;
+	offMusicButton = NULL;
+}
+
+//Loads text
+void Application::loadText()
+{
+	SDL_Color textColor = { 0x00, 0xCC, 0xFF };
+	SDL_Color textYellow = { 0xFF, 0xFF, 0xFF };
+	SDL_Color textRed = { 0xFF, 0x00, 0x00 };
+	SDL_Color textGreen = { 0x00, 0xCC, 0x00 };
+	SDL_Color textBlue = { 0x33, 0x66, 0xFF };
+
+	menuTitle->loadFromRenderedText("Rally EGT", textColor, *gRenderer);
+	startButtonText->loadFromRenderedText("Play", textColor, *gRenderer);
+	exitButtonText->loadFromRenderedText("Exit Game", textColor, *gRenderer);
+	instructionText->loadFromRenderedText("Instructions", textColor, *gRenderer);
+	highScoresText->loadFromRenderedText("Last Ten Games", textColor, *gRenderer);
+	creditText->loadFromRenderedText("Your credit: ", textColor, *gRenderer);
+	creditNumber->loadFromRenderedText(std::to_string((int)gameData.getStartCredit()), textColor, *gRenderer);
+	depositNum->loadFromRenderedText(std::to_string(this->deposit), textColor, *gRenderer);
+	makeDepositText->loadFromRenderedText("Make Deposit", textColor, *gRenderer);
+	betNum->loadFromRenderedText(std::to_string((int)gameData.getPlayerBet()), textColor, *gRenderer);
+	betText->loadFromRenderedText("Your Bet", textColor, *gRenderer);
+	insertCreditText->loadFromRenderedText("Insert Credit", textRed, *gRenderer);
+	insertCreditTextTwo->loadFromRenderedText("Insert Credit", textYellow, *gRenderer);
+	insertCreditTextThree->loadFromRenderedText("Insert Credit", textBlue, *gRenderer);
+	insertCreditTextFour->loadFromRenderedText("Insert Credit", textGreen, *gRenderer);
+}
+
+//Deletes text pointers
+void Application::freeTextPointers()
+{
+	delete this->menuTitle;
+	menuTitle = NULL;
+	delete this->exitButtonText;
+	exitButtonText = NULL;
+	delete this->startButtonText;
+	startButtonText = NULL;
+	delete this->instructionText;
+	instructionText = NULL;
+	delete this->creditText;
+	creditText = NULL;
+	delete this->creditNumber;
+	creditNumber = NULL;
+	delete this->depositNum;
+	depositNum = NULL;
+	delete this->makeDepositText;
+	makeDepositText = NULL;
+	delete this->betNum;
+	betNum = NULL;
+	delete this->betText;
+	betText = NULL;
+	delete this->highScoresText;
+	highScoresText = NULL;
+	delete this->insertCreditText;
+	insertCreditText = NULL;
+	delete this->insertCreditTextTwo;
+	insertCreditTextTwo = NULL;
+	delete this->insertCreditTextThree;
+	insertCreditTextThree = NULL;
+	delete this->insertCreditTextFour;
+	insertCreditTextFour = NULL;
+}
+
+//Ceates blinking effect
+void Application::blinkingEffect(int &start)
+{
+	if (start == 4)
 	{
-		SDL_Rect* tempWall = &wall[i];
-		SDL_SetRenderDrawColor(&renderer, 0xFF, 0x00, 0x00, 0xFF);
-		SDL_RenderDrawRect(&renderer, tempWall);
+		start /= 4;
 	}
+	switch (start)
+	{
+	case 0:
+		insertCreditText->render(*gRenderer, 100, 50);
+		break;
+	case 1:
+		insertCreditTextTwo->render(*gRenderer, 100, 50);
+		break;
+	case 2:
+		insertCreditTextThree->render(*gRenderer, 100, 50);
+		break;
+	case 3:
+		insertCreditTextFour->render(*gRenderer, 100, 50);
+		break;
+	default:
+		break;
+	}
+}
+
+//Checks if music is on
+void Application::checkMusic()
+{
+	if (isMusicOn)
+	{
+		isMusicOn = false;
+		Mix_PauseMusic();
+	}
+	else
+	{
+		isMusicOn = true;
+		if (Mix_PausedMusic() == 1)
+		{
+			Mix_ResumeMusic();
+		}
+		else
+		{
+			Mix_PlayMusic(menuBackgroundSound, 10);
+		}
+	}
+}
+
+//Checks if music is on in game
+void Application::checkMusicInGame(Car& car, SDL_Event&e)
+{
+	if (onMusicButton->handleEvent(&e))
+	{
+		if (isMusicOn)
+		{
+			isMusicOn = false;
+			car.closeSounds();
+		}
+		else
+		{
+			isMusicOn = true;
+			car.loadSounds();
+		}
+	}
+}
+
+void Application::renderMusicButton()
+{
+	if (isMusicOn)
+	{
+		onMusicButton->render(*gRenderer);
+	}
+	else
+	{
+		offMusicButton->render(*gRenderer);
+	}
+}
+
+//Renders menu background textures
+void Application::renderMenuTextures()
+{
+	//-------------RENDER BACKGROUNDS----------
+	startButton->render(*gRenderer);
+	exitButton->render(*gRenderer);
+	startButton->render(*gRenderer);
+	instructionsButton->render(*gRenderer);
+	lastTenGamesButton->render(*gRenderer);
+	addDepositButton->render(*gRenderer);
+	removeDepositButton->render(*gRenderer);
+	makeDepositButton->render(*gRenderer);
+	addBetButton->render(*gRenderer);
+	removeBetButton->render(*gRenderer);
+	betButton->render(*gRenderer);
+	renderMusicButton();
+
+	//------------TEXT RENDERING --------------
+	menuTitle->render(*gRenderer, (SCREEN_WIDTH - menuTitle->getWidth()) / 2, 100);
+	startButtonText->render(*gRenderer, (SCREEN_WIDTH - startButtonText->getWidth()) / 2, 215);
+	exitButtonText->render(*gRenderer, (SCREEN_WIDTH - exitButtonText->getWidth()) / 2, 614);
+	instructionText->render(*gRenderer, 675, 385);
+	highScoresText->render(*gRenderer, 105, 385);
+
+	if (this->deposit < 10)
+	{
+		depositNum->render(*gRenderer, 157, 150);
+	}
+	else if (this->deposit < 100)
+	{
+		depositNum->render(*gRenderer, 147, 150);
+	}
+	else if (this->deposit == 100)
+	{
+		depositNum->render(*gRenderer, 142, 150);
+	}
+
+	makeDepositText->render(*gRenderer, 92, 197);
+
+	if (gameData.getPlayerBet() < 10)
+	{
+		betNum->render(*gRenderer, 734, 150);
+	}
+	else if (gameData.getPlayerBet() < 100)
+	{
+		betNum->render(*gRenderer, 724, 150);
+	}
+	else if (gameData.getPlayerBet() == 100)
+	{
+		betNum->render(*gRenderer, 719, 150);
+	}
+	betText->render(*gRenderer, 691, 197);
 }

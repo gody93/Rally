@@ -4,7 +4,9 @@ class Timer
 {
 public:
 	Timer();
+	//Start ticks
 	void start();
+	//Get ticks
 	Uint32 getTicks();
 	~Timer();
 
